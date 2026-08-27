@@ -18,8 +18,12 @@ $orden     = $_GET['orden'] ?? 'recientes';
 $query = 'productos?select=*';
 
 if (!empty($categoria) && strtolower($categoria) !== 'todos') {
-    // ilike permite coincidencia de texto sin importar mayúsculas/minúsculas
-    $query .= '&categoria=ilike.' . urlencode($categoria);
+    // Si la categoría es Árabes, usamos comodín para evitar fallos por la tilde en Supabase
+    if (in_array(strtolower($categoria), ['árabes', 'arabes'])) {
+        $query .= '&categoria=ilike.*rabes*';
+    } else {
+        $query .= '&categoria=ilike.' . urlencode($categoria);
+    }
 }
 
 if (!empty($genero)) {
@@ -47,7 +51,7 @@ $productos = supabase_request($query, 'GET') ?? [];
 // Cargar Header elegante
 require_once __DIR__ . '/includes/header.php';
 
-// Helper para mantener los parámetros en las URLs de las pestañas
+// Helper para mantener los parámetros en las URLs
 function build_url($param, $valor) {
     $params = $_GET;
     if ($valor === '' || $valor === 'Todos') {
@@ -346,7 +350,7 @@ body {
                 <select name="categoria">
                     <option value="Todos">Todas</option>
                     <option value="Diseñador" <?= strtolower($categoria) === 'diseñador' ? 'selected' : '' ?>>Diseñador</option>
-                    <option value="Árabes" <?= strtolower($categoria) === 'árabes' ? 'selected' : '' ?>>Árabes</option>
+                    <option value="Arabes" <?= in_array(strtolower($categoria), ['árabes', 'arabes']) ? 'selected' : '' ?>>Árabes</option>
                     <option value="Nichos" <?= strtolower($categoria) === 'nichos' ? 'selected' : '' ?>>Nichos</option>
                 </select>
             </div>
@@ -379,7 +383,7 @@ body {
         <div class="cat-pills">
             <a href="<?= build_url('categoria', 'Todos') ?>" class="pill-item <?= strtolower($categoria) === 'todos' ? 'active' : '' ?>">TODOS</a>
             <a href="<?= build_url('categoria', 'Diseñador') ?>" class="pill-item <?= strtolower($categoria) === 'diseñador' ? 'active' : '' ?>">DISEÑADOR</a>
-            <a href="<?= build_url('categoria', 'Árabes') ?>" class="pill-item <?= strtolower($categoria) === 'árabes' ? 'active' : '' ?>">ÁRABES</a>
+            <a href="<?= build_url('categoria', 'Arabes') ?>" class="pill-item <?= in_array(strtolower($categoria), ['árabes', 'arabes']) ? 'active' : '' ?>">ÁRABES</a>
             <a href="<?= build_url('categoria', 'Nichos') ?>" class="pill-item <?= strtolower($categoria) === 'nichos' ? 'active' : '' ?>">NICHOS</a>
         </div>
 
