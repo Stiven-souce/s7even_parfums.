@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/includes/config.php';
+require_once __DIR__ . '/includes/db.php';
 require_once __DIR__ . '/includes/carrito.php';
 
 $error = '';
@@ -15,47 +16,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error = 'Ingresa un correo electrónico válido.';
     } else {
-        $dir_data = __DIR__ . '/data';
-        if (!is_dir($dir_data)) {
-            mkdir($dir_data, 0777, true);
-        }
+        // Consultar Supabase para verificar si el correo ya está registrado
+        $resultado = supabase_request('clientes?email=eq.' . urlencode($email), 'GET');
 
-        $file_clientes = $dir_data . '/clientes.json';
-        $clientes = file_exists($file_clientes) ? json_decode(file_get_contents($file_clientes), true) : [];
-        if (!is_array($clientes)) {
-            $clientes = [];
-        }
-
-        // Verificar si el correo ya existe
-        $existe = false;
-        foreach ($clientes as $c) {
-            if (isset($c['email']) && strtolower($c['email']) === $email) {
-                $existe = true;
-                break;
-            }
-        }
-
-        if ($existe) {
+        if (!empty($resultado) && isset($resultado[0])) {
             $error = 'El correo electrónico ya está registrado.';
         } else {
+            $nuevo_id = 'CLI-' . strtoupper(substr(uniqid(), -6));
+            
             $nuevo_cliente = [
-                'id' => 'CLI-' . strtoupper(substr(uniqid(), -6)),
+                'id' => $nuevo_id,
                 'nombre' => $nombre,
                 'email' => $email,
                 'password' => password_hash($password, PASSWORD_DEFAULT),
                 'fecha_registro' => date('Y-m-d H:i:s')
             ];
 
-            $clientes[] = $nuevo_cliente;
-            $guardado = file_put_contents($file_clientes, json_encode($clientes, JSON_PRETTY_PRINT));
+            // Insertar nuevo usuario en Supabase
+            $respuesta = supabase_request('clientes', 'POST', $nuevo_cliente);
 
-            if ($guardado === false) {
-                $error = 'Error de escritura en el servidor. Inténtalo de nuevo.';
+            if (isset($respuesta['error'])) {
+                $error = 'Error al registrar el usuario en la base de datos. Inténtalo de nuevo.';
             } else {
                 // Iniciar sesión automáticamente tras crear la cuenta
-                $_SESSION['cliente_id'] = $nuevo_cliente['id'];
-                $_SESSION['cliente_nombre'] = $nuevo_cliente['nombre'];
-                $_SESSION['cliente_email'] = $nuevo_cliente['email'];
+                $_SESSION['cliente_id'] = $nuevo_id;
+                $_SESSION['cliente_nombre'] = $nombre;
+                $_SESSION['cliente_email'] = $email;
 
                 $destino = ($redirect === 'checkout') ? 'checkout.php' : 'index.php';
                 header("Location: $destino");
