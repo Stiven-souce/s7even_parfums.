@@ -52,14 +52,26 @@ usort($pedidos, function($a, $b) {
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach ($pedidos as $p): ?>
+                        <?php foreach ($pedidos as $p): 
+                            // Manejo seguro de la variable cliente (si es array o string)
+                            $nombre_cliente = 'N/A';
+                            if (isset($p['cliente'])) {
+                                if (is_array($p['cliente'])) {
+                                    $nombre_cliente = $p['cliente']['nombre'] ?? ($p['cliente']['email'] ?? 'Cliente Registrado');
+                                } else {
+                                    $nombre_cliente = $p['cliente'];
+                                }
+                            } elseif (isset($p['nombre'])) {
+                                $nombre_cliente = $p['nombre'];
+                            }
+                        ?>
                             <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-                                <td style="padding: 12px; font-weight: bold; color: #c5a059;"><?= htmlspecialchars($p['codigo'] ?? 'N/A') ?></td>
+                                <td style="padding: 12px; font-weight: bold; color: #c5a059;"><?= htmlspecialchars($p['codigo'] ?? ($p['id'] ?? 'N/A')) ?></td>
                                 <td style="padding: 12px; color: #aaa;"><?= htmlspecialchars($p['fecha'] ?? 'N/A') ?></td>
-                                <td style="padding: 12px;"><?= htmlspecialchars($p['cliente'] ?? 'N/A') ?></td>
-                                <td style="padding: 12px;"><?= htmlspecialchars($p['telefono'] ?? 'N/A') ?></td>
-                                <td style="padding: 12px;"><?= htmlspecialchars($p['metodo_pago'] ?? 'N/A') ?></td>
-                                <td style="padding: 12px; font-weight: bold;">S/ <?= number_format($p['total'] ?? 0, 2) ?></td>
+                                <td style="padding: 12px;"><?= htmlspecialchars($nombre_cliente) ?></td>
+                                <td style="padding: 12px;"><?= htmlspecialchars($p['telefono'] ?? ($p['cliente']['telefono'] ?? 'N/A')) ?></td>
+                                <td style="padding: 12px;"><?= htmlspecialchars($p['metodo_pago'] ?? ($p['metodo'] ?? 'N/A')) ?></td>
+                                <td style="padding: 12px; font-weight: bold; color: #c5a059;">S/ <?= number_format($p['total'] ?? 0, 2) ?></td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
