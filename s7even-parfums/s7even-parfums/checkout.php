@@ -4,11 +4,17 @@ require_once __DIR__ . '/includes/config.php';
 require_once __DIR__ . '/includes/productos.php';
 require_once __DIR__ . '/includes/carrito.php';
 
-// Tu número real de WhatsApp configurado (Perú +51)
+// Tu número real de WhatsApp (Perú +51)
 $numero_whatsapp = "51982424158"; 
 
-$carrito = s7_carrito_obtener();
-$total = s7_carrito_total();
+// Obtener carrito de la sesión de forma directa y segura
+$carrito = $_SESSION['carrito'] ?? [];
+
+// Calcular total
+$total = 0;
+foreach ($carrito as $item) {
+    $total += ($item['precio'] * $item['cantidad']);
+}
 
 if (empty($carrito)) {
     header('Location: tienda.php');
@@ -25,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $notas = trim($_POST['notas'] ?? '');
 
     if ($nombre && $telefono && $direccion && $ciudad) {
-        // 1. Guardar el pedido en el JSON para el Panel Admin
+        // 1. Guardar pedido en el JSON para el Panel Admin
         $file_pedidos = __DIR__ . '/data/pedidos.json';
         $pedidos = file_exists($file_pedidos) ? json_decode(file_get_contents($file_pedidos), true) : [];
 
@@ -39,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'direccion' => $direccion,
                 'ciudad' => $ciudad
             ],
-            'productos' => $carrito,
+            'productos' => array_values($carrito),
             'total' => $total,
             'metodo_pago' => $metodo_pago,
             'notas' => $notas,
@@ -50,7 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         file_put_contents($file_pedidos, json_encode($pedidos, JSON_PRETTY_PRINT));
 
         // 2. Vaciar el carrito
-        s7_carrito_vaciar();
+        $_SESSION['carrito'] = [];
 
         // 3. Crear el mensaje formateado para WhatsApp
         $msg  = "✨ *NUEVO PEDIDO - S7EVEN PARFUMS* ✨\n";
@@ -70,7 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $msg .= "\n\n*Notas:* " . $notas;
         }
 
-        // 4. Redirigir directamente a WhatsApp
+        // 4. Redirigir a WhatsApp
         $url_wa = "https://api.whatsapp.com/send?phone=" . $numero_whatsapp . "&text=" . urlencode($msg);
         header('Location: ' . $url_wa);
         exit;
@@ -112,7 +118,7 @@ require_once __DIR__ . '/includes/header.php';
       </div>
     </div>
 
-    <!-- Formulario de envío -->
+    <!-- Formulario de Envío -->
     <div style="background: rgba(20, 20, 20, 0.85); border: 1px solid rgba(197, 160, 89, 0.3); padding: 30px; border-radius: 8px;">
       <h2 style="font-family: 'Cinzel', serif; color: #c5a059; margin-bottom: 20px;">Datos de Envío</h2>
 
