@@ -19,11 +19,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Consultar Supabase para verificar si el correo ya está registrado
         $resultado = supabase_request('clientes?email=eq.' . urlencode($email), 'GET');
 
-        if (!empty($resultado) && isset($resultado[0])) {
+        if (!empty($resultado) && isset($resultado[0]) && !isset($resultado['error'])) {
             $error = 'El correo electrónico ya está registrado.';
         } else {
-            // Omitimos el 'id' para que Supabase lo genere como entero autoincrementable
+            $nuevo_id = 'CLI-' . strtoupper(substr(uniqid(), -6));
+
             $nuevo_cliente = [
+                'id' => $nuevo_id,
                 'nombre' => $nombre,
                 'email' => $email,
                 'password' => password_hash($password, PASSWORD_DEFAULT),
@@ -33,14 +35,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Insertar nuevo usuario en Supabase
             $respuesta = supabase_request('clientes', 'POST', $nuevo_cliente);
 
-            if (isset($respuesta['error']) || empty($respuesta)) {
-                $error = 'Error al registrar el usuario en la base de datos.';
+            if (isset($respuesta['error']) || (isset($respuesta['message']) && !isset($respuesta[0]))) {
+                $mensaje_db = $respuesta['message'] ?? ($respuesta['hint'] ?? 'Error de conexión');
+                $error = 'Error de Supabase: ' . htmlspecialchars($mensaje_db);
             } else {
-                // Supabase retorna el arreglo del registro recién insertado con su ID numérico
-                $usuario_creado = $respuesta[0] ?? $respuesta;
-
-                // Iniciar sesión automáticamente tras crear la cuenta
-                $_SESSION['cliente_id'] = $usuario_creado['id'] ?? null;
+                $_SESSION['cliente_id'] = $nuevo_id;
                 $_SESSION['cliente_nombre'] = $nombre;
                 $_SESSION['cliente_email'] = $email;
 
@@ -61,7 +60,7 @@ require_once __DIR__ . '/includes/header.php';
     <h2 style="font-family: 'Cinzel', serif; color: #c5a059; text-align: center; margin-bottom: 25px;">CREAR CUENTA</h2>
 
     <?php if ($error): ?>
-      <p style="color: #ff5555; text-align: center; margin-bottom: 15px; font-size: 0.9rem;"><?= htmlspecialchars($error) ?></p>
+      <p style="color: #ff5555; text-align: center; margin-bottom: 15px; font-size: 0.9rem;"><?= $error ?></p>
     <?php endif; ?>
 
     <form method="POST" style="display: flex; flex-direction: column; gap: 15px;">
