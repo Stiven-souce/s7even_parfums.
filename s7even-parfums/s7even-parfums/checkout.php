@@ -14,6 +14,13 @@ $raw_cart = $_SESSION['carrito'] ?? [];
 $carrito = [];
 $total = 0;
 
+// Cargar catálogo de productos por si el carrito almacena solo IDs
+$catalogo = s7_catalogo();
+$productos_map = [];
+foreach ($catalogo as $prod) {
+    $productos_map[$prod['id']] = $prod;
+}
+
 if (is_array($raw_cart)) {
     foreach ($raw_cart as $id => $item) {
         if (is_array($item)) {
@@ -27,24 +34,22 @@ if (is_array($raw_cart)) {
                 'cantidad' => $cant
             ];
             $total += ($prec * $cant);
-        } elseif (is_numeric($item)) {
-            $p_info = s7_obtener_producto($id);
-            if ($p_info) {
-                $cant = intval($item);
-                $prec = floatval($p_info['precio']);
-                $carrito[] = [
-                    'id' => $id,
-                    'nombre' => $p_info['nombre'],
-                    'precio' => $prec,
-                    'cantidad' => $cant
-                ];
-                $total += ($prec * $cant);
-            }
+        } elseif (is_numeric($item) && isset($productos_map[$id])) {
+            $p_info = $productos_map[$id];
+            $cant = intval($item);
+            $prec = floatval($p_info['precio']);
+            $carrito[] = [
+                'id' => $id,
+                'nombre' => $p_info['nombre'],
+                'precio' => $prec,
+                'cantidad' => $cant
+            ];
+            $total += ($prec * $cant);
         }
     }
 }
 
-// Si el carrito está completamente vacío tras la verificación, ir a tienda
+// Si el carrito está vacío, regresar a la tienda
 if (empty($carrito)) {
     header('Location: tienda.php');
     exit;
@@ -120,7 +125,7 @@ require_once __DIR__ . '/includes/header.php';
 ?>
 
 <main style="min-height: 85vh; padding: 60px 20px; display: flex; justify-content: center; align-items: center;">
-  <div style="max-width: 1000px; width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 40px;">
+  <div style="max-width: 1000px; width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 40px;">
     
     <!-- Resumen del Pedido -->
     <div style="background: rgba(20, 20, 20, 0.85); border: 1px solid rgba(197, 160, 89, 0.3); padding: 30px; border-radius: 8px;">
