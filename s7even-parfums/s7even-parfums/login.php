@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/includes/config.php';
+require_once __DIR__ . '/includes/db.php';
 require_once __DIR__ . '/includes/carrito.php';
 
 $error = '';
@@ -9,27 +10,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = strtolower(trim($_POST['email'] ?? ''));
     $password = $_POST['password'] ?? '';
 
-    $file_clientes = __DIR__ . '/data/clientes.json';
-    $clientes = file_exists($file_clientes) ? json_decode(file_get_contents($file_clientes), true) : [];
+    // Buscar al usuario en Supabase por email
+    $resultado = supabase_request('clientes?email=eq.' . urlencode($email), 'GET');
 
-    $usuario_encontrado = null;
-    if (is_array($clientes)) {
-        foreach ($clientes as $c) {
-            if (isset($c['email']) && strtolower($c['email']) === $email) {
-                $usuario_encontrado = $c;
-                break;
-            }
+    if (!empty($resultado) && isset($resultado[0]) && !isset($resultado['error'])) {
+        $usuario = $resultado[0];
+
+        // Validar contraseña
+        if (password_verify($password, $usuario['password']) || $password === $usuario['password']) {
+            $_SESSION['cliente_id'] = $usuario['id'];
+            $_SESSION['cliente_nombre'] = $usuario['nombre'];
+            $_SESSION['cliente_email'] = $usuario['email'];
+
+            $destino = ($redirect === 'checkout') ? 'checkout.php' : 'index.php';
+            header("Location: $destino");
+            exit;
+        } else {
+            $error = 'Credenciales incorrectas.';
         }
-    }
-
-    if ($usuario_encontrado && (password_verify($password, $usuario_encontrado['password']) || $password === $usuario_encontrado['password'])) {
-        $_SESSION['cliente_id'] = $usuario_encontrado['id'];
-        $_SESSION['cliente_nombre'] = $usuario_encontrado['nombre'];
-        $_SESSION['cliente_email'] = $usuario_encontrado['email'];
-
-        $destino = ($redirect === 'checkout') ? 'checkout.php' : 'index.php';
-        header("Location: $destino");
-        exit;
     } else {
         $error = 'Credenciales incorrectas.';
     }
