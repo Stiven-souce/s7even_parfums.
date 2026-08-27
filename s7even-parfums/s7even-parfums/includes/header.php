@@ -5,6 +5,8 @@
  */
 $page_title = $page_title ?? SITE_NAME;
 $contador_carrito = s7_carrito_contador();
+$cliente_logueado = isset($_SESSION['cliente_id']);
+$nombre_cliente = $cliente_logueado ? explode(' ', $_SESSION['cliente_nombre'])[0] : '';
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -43,10 +45,17 @@ $contador_carrito = s7_carrito_contador();
         </button>
       </form>
 
-      <!-- Botón Usuario / Login de Clientes -->
-      <a href="<?= $base ?? '' ?>login.php" class="nav__icon-btn" title="Mi Cuenta" style="color: #c5a059; display: flex; align-items: center;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-      </a>
+      <!-- Botón Usuario Dinámico -->
+      <?php if ($cliente_logueado): ?>
+        <a href="<?= $base ?? '' ?>mi-cuenta.php" style="color: #c5a059; font-size: 0.85rem; text-decoration: none; font-weight: 500; display: flex; align-items: center; gap: 6px;" title="Ver mi cuenta">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          <span><?= htmlspecialchars($nombre_cliente) ?></span>
+        </a>
+      <?php else: ?>
+        <a href="<?= $base ?? '' ?>login.php" class="nav__icon-btn" title="Iniciar Sesión" style="color: #c5a059; display: flex; align-items: center;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        </a>
+      <?php endif; ?>
 
       <!-- Carrito -->
       <a href="<?= $base ?? '' ?>carrito.php" class="nav__cart">
