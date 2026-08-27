@@ -11,6 +11,10 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// ---- Configuración de Supabase (Base de Datos Permanente) ----
+define('SUPABASE_URL', 'https://iiiulpjkspsordymbzlj.supabase.co');
+define('SUPABASE_KEY', 'sb_publishable_rHvCnGm8ZKHriu4FF_zJ1w_sb3TrcgK');
+
 // ---- Datos de contacto / pago ----
 define('SITE_NAME', 'S7even Parfums');
 define('WHATSAPP_NUMERO', '51982424158');           // sin "+", solo dígitos
