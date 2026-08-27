@@ -121,7 +121,7 @@ require __DIR__ . '/includes/header.php';
   </svg>
 </div>
 
-<!-- ===== COLECCIÓN (destacados, con carrito real) ===== -->
+<!-- ===== COLECCIÓN ===== -->
 <section class="coleccion" id="coleccion">
   <p class="eyebrow center">La Colección</p>
   <h2 class="section-title center">Siete criaturas,<br>siete esencias.</h2>
@@ -180,7 +180,14 @@ require __DIR__ . '/includes/header.php';
       <h2>¿Listo para<br>tu instinto?</h2>
       <p class="lead">Escríbenos para pedidos, distribución al por mayor o una cita privada de olfateo en nuestro atelier.</p>
       <ul class="contacto__list">
-        <li><strong>WhatsApp</strong><span>+<?= htmlspecialchars(WHATSAPP_NUMERO) ?></span></li>
+        <li>
+          <strong>WhatsApp</strong>
+          <span>
+            <a href="https://wa.me/<?= htmlspecialchars(WHATSAPP_NUMERO) ?>" target="_blank" style="color: inherit; text-decoration: underline;">
+              +<?= htmlspecialchars(WHATSAPP_NUMERO) ?>
+            </a>
+          </span>
+        </li>
         <li><strong>Correo</strong><span><?= htmlspecialchars(CORREO_CONTACTO) ?></span></li>
         <li><strong>Atelier</strong><span>Morales, San Martín, Perú</span></li>
       </ul>
@@ -191,6 +198,7 @@ require __DIR__ . '/includes/header.php';
       </div>
     </div>
 
+    <!-- Formulario configurado para enviar a WhatsApp -->
     <form class="contacto__form" id="contactForm">
       <p class="eyebrow">Lista de acceso</p>
       <h3>Únete a la manada</h3>
@@ -198,20 +206,42 @@ require __DIR__ . '/includes/header.php';
 
       <label>
         <span>Nombre</span>
-        <input type="text" name="nombre" placeholder="Tu nombre" required>
+        <input type="text" id="contactNombre" name="nombre" placeholder="Tu nombre" required>
       </label>
       <label>
         <span>Correo</span>
-        <input type="email" name="correo" placeholder="tucorreo@email.com" required>
+        <input type="email" id="contactCorreo" name="correo" placeholder="tucorreo@email.com" required>
       </label>
       <label>
         <span>Mensaje (opcional)</span>
-        <textarea name="mensaje" rows="3" placeholder="Cuéntanos qué instinto buscas..."></textarea>
+        <textarea id="contactMensaje" name="mensaje" rows="3" placeholder="Cuéntanos qué instinto buscas..."></textarea>
       </label>
-      <button type="submit" class="btn btn--gold btn--full">Enviar</button>
+      <button type="submit" class="btn btn--gold btn--full">Enviar a WhatsApp</button>
       <p class="form-status" id="formStatus"></p>
     </form>
   </div>
 </section>
+
+<!-- Script para redirigir el formulario a WhatsApp -->
+<script>
+document.getElementById('contactForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  
+  const nombre = document.getElementById('contactNombre').value.trim();
+  const correo = document.getElementById('contactCorreo').value.trim();
+  const mensaje = document.getElementById('contactMensaje').value.trim();
+  const numWa = "<?= htmlspecialchars(WHATSAPP_NUMERO) ?>";
+
+  let textoWA = `✨ *NUEVA CONSULTA - S7EVEN PARFUMS* ✨\n\n`;
+  textoWA += `*Nombre:* ${nombre}\n`;
+  textoWA += `*Correo:* ${correo}\n`;
+  if (mensaje) {
+    textoWA += `*Mensaje:* ${mensaje}\n`;
+  }
+
+  const url = `https://api.whatsapp.com/send?phone=${numWa}&text=${encodeURIComponent(textoWA)}`;
+  window.open(url, '_blank');
+});
+</script>
 
 <?php require __DIR__ . '/includes/footer.php'; ?>
