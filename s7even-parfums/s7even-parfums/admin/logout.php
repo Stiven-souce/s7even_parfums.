@@ -1,6 +1,5 @@
 <?php
 require_once __DIR__ . '/../includes/config.php';
-unset($_SESSION['admin_autenticado']);
-session_destroy();
+unset($_SESSION['admin_logueado']);
 header('Location: login.php');
 exit;
