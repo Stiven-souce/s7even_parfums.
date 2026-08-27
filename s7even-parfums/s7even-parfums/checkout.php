@@ -1,25 +1,33 @@
 <?php
-$page_title = 'Finalizar Pedido - S7even Parfums';
 require_once __DIR__ . '/includes/config.php';
 require_once __DIR__ . '/includes/productos.php';
 require_once __DIR__ . '/includes/carrito.php';
 
-// Obtener carrito de la sesión
-$carrito = $_SESSION['carrito'] ?? [];
+// Obtener el carrito usando la función nativa del sistema si existe, o validar la sesión directamente
+$carrito_raw = function_exists('s7_carrito_obtener') ? s7_carrito_obtener() : ($_SESSION['carrito'] ?? []);
 
-// Calcular total
+// Normalizar y filtrar el carrito para asegurar que cada ítem sea un array estructurado
+$carrito = [];
 $total = 0;
-foreach ($carrito as $item) {
-    $total += ($item['precio'] * $item['cantidad']);
+
+if (is_array($carrito_raw)) {
+    foreach ($carrito_raw as $key => $item) {
+        if (is_array($item)) {
+            $precio = floatval($item['precio'] ?? 0);
+            $cantidad = intval($item['cantidad'] ?? 1);
+            $total += ($precio * $cantidad);
+            $carrito[] = $item;
+        }
+    }
 }
 
-// Si el carrito está vacío, volver a la tienda
+// Si el carrito procesado está vacío, volver a la tienda
 if (empty($carrito)) {
     header('Location: tienda.php');
     exit;
 }
 
-// Cargar la cabecera del sitio
+$page_title = 'Finalizar Pedido - S7even Parfums';
 require_once __DIR__ . '/includes/header.php';
 ?>
 
@@ -40,7 +48,7 @@ require_once __DIR__ . '/includes/header.php';
   <?php else: ?>
     <!-- VISTA SI SÍ HA INICIADO SESIÓN (FORMULARIO DE CHECKOUT) -->
     <?php
-    $numero_whatsapp = "51982424158"; 
+    $numero_whatsapp = defined('WHATSAPP_NUMERO') ? WHATSAPP_NUMERO : "51982424158"; 
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $nombre = trim($_POST['nombre'] ?? '');
@@ -66,7 +74,7 @@ require_once __DIR__ . '/includes/header.php';
                     'direccion' => $direccion,
                     'ciudad' => $ciudad
                 ],
-                'productos' => array_values($carrito),
+                'productos' => $carrito,
                 'total' => $total,
                 'metodo_pago' => $metodo_pago,
                 'notas' => $notas,
@@ -76,7 +84,12 @@ require_once __DIR__ . '/includes/header.php';
             $pedidos[] = $nuevo_pedido;
             file_put_contents($file_pedidos, json_encode($pedidos, JSON_PRETTY_PRINT));
 
-            $_SESSION['carrito'] = [];
+            // Vaciar el carrito
+            if (function_exists('s7_carrito_vaciar')) {
+                s7_carrito_vaciar();
+            } else {
+                $_SESSION['carrito'] = [];
+            }
 
             $msg  = "✨ *NUEVO PEDIDO - S7EVEN PARFUMS* ✨\n";
             $msg .= "*Código:* " . $nuevo_pedido['id'] . "\n\n";
@@ -87,7 +100,10 @@ require_once __DIR__ . '/includes/header.php';
             $msg .= "*DETALLE DEL PEDIDO:*\n";
 
             foreach ($carrito as $item) {
-                $msg .= "• " . $item['nombre'] . " (x" . $item['cantidad'] . ") - S/ " . number_format($item['precio'] * $item['cantidad'], 2) . "\n";
+                $nombre_p = $item['nombre'] ?? 'Producto';
+                $cant_p = $item['cantidad'] ?? 1;
+                $subtotal_p = ($item['precio'] ?? 0) * $cant_p;
+                $msg .= "• " . $nombre_p . " (x" . $cant_p . ") - S/ " . number_format($subtotal_p, 2) . "\n";
             }
 
             $msg .= "\n*TOTAL A PAGAR:* S/ " . number_format($total, 2);
@@ -102,7 +118,7 @@ require_once __DIR__ . '/includes/header.php';
     }
     ?>
 
-    <div style="max-width: 1000px; width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 40px;">
+    <div style="max-width: 1000px; width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 40px;">
       
       <!-- Resumen del Pedido -->
       <div style="background: rgba(20, 20, 20, 0.85); border: 1px solid rgba(197, 160, 89, 0.3); padding: 30px; border-radius: 8px;">
@@ -112,10 +128,10 @@ require_once __DIR__ . '/includes/header.php';
           <?php foreach ($carrito as $item): ?>
             <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(197, 160, 89, 0.15); padding-bottom: 10px;">
               <div>
-                <p style="color: #fff; margin: 0; font-weight: 500;"><?= htmlspecialchars($item['nombre']) ?></p>
-                <span style="color: #888; font-size: 0.8rem;">Cantidad: <?= $item['cantidad'] ?></span>
+                <p style="color: #fff; margin: 0; font-weight: 500;"><?= htmlspecialchars($item['nombre'] ?? 'Producto') ?></p>
+                <span style="color: #888; font-size: 0.8rem;">Cantidad: <?= $item['cantidad'] ?? 1 ?></span>
               </div>
-              <span style="color: #c5a059;">S/ <?= number_format($item['precio'] * $item['cantidad'], 2) ?></span>
+              <span style="color: #c5a059;">S/ <?= number_format(($item['precio'] ?? 0) * ($item['cantidad'] ?? 1), 2) ?></span>
             </div>
           <?php endforeach; ?>
         </div>
