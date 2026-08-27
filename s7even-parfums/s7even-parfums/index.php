@@ -183,8 +183,8 @@ require __DIR__ . '/includes/header.php';
         <li>
           <strong>WhatsApp</strong>
           <span>
-            <a href="https://wa.me/<?= htmlspecialchars(WHATSAPP_NUMERO) ?>" target="_blank" style="color: inherit; text-decoration: underline;">
-              +<?= htmlspecialchars(WHATSAPP_NUMERO) ?>
+            <a href="https://wa.me/51982424158" target="_blank" style="color: inherit; text-decoration: underline;">
+              +51 982 424 158
             </a>
           </span>
         </li>
@@ -230,7 +230,7 @@ document.getElementById('contactForm').addEventListener('submit', function(e) {
   const nombre = document.getElementById('contactNombre').value.trim();
   const correo = document.getElementById('contactCorreo').value.trim();
   const mensaje = document.getElementById('contactMensaje').value.trim();
-  const numWa = "<?= htmlspecialchars(WHATSAPP_NUMERO) ?>";
+  const numWa = "51982424158";
 
   let textoWA = `✨ *NUEVA CONSULTA - S7EVEN PARFUMS* ✨\n\n`;
   textoWA += `*Nombre:* ${nombre}\n`;
