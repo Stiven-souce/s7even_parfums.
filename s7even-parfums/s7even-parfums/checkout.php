@@ -3,7 +3,13 @@ require_once __DIR__ . '/includes/config.php';
 require_once __DIR__ . '/includes/productos.php';
 require_once __DIR__ . '/includes/carrito.php';
 
-// Obtener carrito de la sesión de manera tolerante a cualquier formato
+// 1. SI NO HA INICIADO SESIÓN: REDIRIGIR AUTOMÁTICAMENTE A LOGIN
+if (!isset($_SESSION['cliente_id'])) {
+    header('Location: login.php?redirect=checkout');
+    exit;
+}
+
+// 2. OBTENER Y PROCESAR EL CARRITO DE LA SESIÓN
 $raw_cart = $_SESSION['carrito'] ?? [];
 $carrito = [];
 $total = 0;
@@ -22,7 +28,6 @@ if (is_array($raw_cart)) {
             ];
             $total += ($prec * $cant);
         } elseif (is_numeric($item)) {
-            // Caso en el que el carrito guarda ID => Cantidad
             $p_info = s7_obtener_producto($id);
             if ($p_info) {
                 $cant = intval($item);
@@ -39,147 +44,136 @@ if (is_array($raw_cart)) {
     }
 }
 
+// Si el carrito está completamente vacío tras la verificación, ir a tienda
+if (empty($carrito)) {
+    header('Location: tienda.php');
+    exit;
+}
+
+// 3. PROCESAR ENVÍO DEL FORMULARIO DE PEDIDO
+$numero_whatsapp = defined('WHATSAPP_NUMERO') ? WHATSAPP_NUMERO : "51982424158";
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $nombre = trim($_POST['nombre'] ?? '');
+    $telefono = trim($_POST['telefono'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $direccion = trim($_POST['direccion'] ?? '');
+    $ciudad = trim($_POST['ciudad'] ?? '');
+    $metodo_pago = trim($_POST['metodo_pago'] ?? '');
+    $notas = trim($_POST['notas'] ?? '');
+
+    if ($nombre && $telefono && $direccion && $ciudad) {
+        $file_pedidos = __DIR__ . '/data/pedidos.json';
+        $pedidos = file_exists($file_pedidos) ? json_decode(file_get_contents($file_pedidos), true) : [];
+
+        $nuevo_pedido = [
+            'id' => 'ORD-' . strtoupper(substr(uniqid(), -6)),
+            'cliente_id' => $_SESSION['cliente_id'],
+            'fecha' => date('Y-m-d H:i:s'),
+            'cliente' => [
+                'nombre' => $nombre,
+                'telefono' => $telefono,
+                'email' => $email,
+                'direccion' => $direccion,
+                'ciudad' => $ciudad
+            ],
+            'productos' => $carrito,
+            'total' => $total,
+            'metodo_pago' => $metodo_pago,
+            'notas' => $notas,
+            'estado' => 'Pendiente'
+        ];
+
+        $pedidos[] = $nuevo_pedido;
+        file_put_contents($file_pedidos, json_encode($pedidos, JSON_PRETTY_PRINT));
+
+        // Vaciar el carrito tras compra exitosa
+        $_SESSION['carrito'] = [];
+
+        // Redirigir a WhatsApp con el mensaje estructurado
+        $msg  = "✨ *NUEVO PEDIDO - S7EVEN PARFUMS* ✨\n";
+        $msg .= "*Código:* " . $nuevo_pedido['id'] . "\n\n";
+        $msg .= "*Cliente:* " . $nombre . "\n";
+        $msg .= "*Teléfono:* " . $telefono . "\n";
+        $msg .= "*Dirección:* " . $direccion . " (" . $ciudad . ")\n";
+        $msg .= "*Método de Pago:* " . $metodo_pago . "\n\n";
+        $msg .= "*DETALLE DEL PEDIDO:*\n";
+
+        foreach ($carrito as $item) {
+            $subtotal_p = $item['precio'] * $item['cantidad'];
+            $msg .= "• " . $item['nombre'] . " (x" . $item['cantidad'] . ") - S/ " . number_format($subtotal_p, 2) . "\n";
+        }
+
+        $msg .= "\n*TOTAL A PAGAR:* S/ " . number_format($total, 2);
+        if ($notas) {
+            $msg .= "\n\n*Notas:* " . $notas;
+        }
+
+        $url_wa = "https://api.whatsapp.com/send?phone=" . $numero_whatsapp . "&text=" . urlencode($msg);
+        header("Location: $url_wa");
+        exit;
+    }
+}
+
 $page_title = 'Finalizar Pedido - S7even Parfums';
 require_once __DIR__ . '/includes/header.php';
 ?>
 
 <main style="min-height: 85vh; padding: 60px 20px; display: flex; justify-content: center; align-items: center;">
-  
-  <?php if (!isset($_SESSION['cliente_id'])): ?>
-    <!-- VISTA SI NO HA INICIADO SESIÓN -->
-    <div style="background: rgba(20, 20, 20, 0.95); border: 1px solid rgba(197, 160, 89, 0.4); padding: 40px; border-radius: 8px; max-width: 500px; width: 100%; text-align: center;">
-      <h2 style="font-family: 'Cinzel', serif; color: #c5a059; margin-bottom: 15px;">Iniciar Sesión Requerido</h2>
-      <p style="color: #ccc; margin-bottom: 25px; line-height: 1.5;">Para poder procesar tu pedido y brindarte un seguimiento personalizado, por favor ingresa a tu cuenta.</p>
+  <div style="max-width: 1000px; width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 40px;">
+    
+    <!-- Resumen del Pedido -->
+    <div style="background: rgba(20, 20, 20, 0.85); border: 1px solid rgba(197, 160, 89, 0.3); padding: 30px; border-radius: 8px;">
+      <h2 style="font-family: 'Cinzel', serif; color: #c5a059; margin-bottom: 20px;">Resumen de Compra</h2>
       
-      <div style="display: flex; flex-direction: column; gap: 15px;">
-        <a href="login.php?redirect=checkout" style="background: linear-gradient(135deg, #c5a059, #9a7b3e); color: #000; padding: 12px; font-weight: 600; text-decoration: none; border-radius: 4px; font-family: 'Cinzel', serif; display: block;">INICIAR SESIÓN</a>
-        <a href="registro.php?redirect=checkout" style="border: 1px solid #c5a059; color: #c5a059; padding: 12px; font-weight: 600; text-decoration: none; border-radius: 4px; font-family: 'Cinzel', serif; display: block;">CREAR UNA CUENTA</a>
-      </div>
-    </div>
-
-  <?php else: ?>
-    <!-- VISTA SI SÍ HA INICIADO SESIÓN (FORMULARIO DE CHECKOUT) -->
-    <?php
-    $numero_whatsapp = defined('WHATSAPP_NUMERO') ? WHATSAPP_NUMERO : "51982424158"; 
-
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $nombre = trim($_POST['nombre'] ?? '');
-        $telefono = trim($_POST['telefono'] ?? '');
-        $email = trim($_POST['email'] ?? '');
-        $direccion = trim($_POST['direccion'] ?? '');
-        $ciudad = trim($_POST['ciudad'] ?? '');
-        $metodo_pago = trim($_POST['metodo_pago'] ?? '');
-        $notas = trim($_POST['notas'] ?? '');
-
-        if ($nombre && $telefono && $direccion && $ciudad) {
-            $file_pedidos = __DIR__ . '/data/pedidos.json';
-            $pedidos = file_exists($file_pedidos) ? json_decode(file_get_contents($file_pedidos), true) : [];
-
-            $nuevo_pedido = [
-                'id' => 'ORD-' . strtoupper(substr(uniqid(), -6)),
-                'cliente_id' => $_SESSION['cliente_id'],
-                'fecha' => date('Y-m-d H:i:s'),
-                'cliente' => [
-                    'nombre' => $nombre,
-                    'telefono' => $telefono,
-                    'email' => $email,
-                    'direccion' => $direccion,
-                    'ciudad' => $ciudad
-                ],
-                'productos' => $carrito,
-                'total' => $total,
-                'metodo_pago' => $metodo_pago,
-                'notas' => $notas,
-                'estado' => 'Pendiente'
-            ];
-
-            $pedidos[] = $nuevo_pedido;
-            file_put_contents($file_pedidos, json_encode($pedidos, JSON_PRETTY_PRINT));
-
-            // Vaciar el carrito
-            $_SESSION['carrito'] = [];
-
-            $msg  = "✨ *NUEVO PEDIDO - S7EVEN PARFUMS* ✨\n";
-            $msg .= "*Código:* " . $nuevo_pedido['id'] . "\n\n";
-            $msg .= "*Cliente:* " . $nombre . "\n";
-            $msg .= "*Teléfono:* " . $telefono . "\n";
-            $msg .= "*Dirección:* " . $direccion . " (" . $ciudad . ")\n";
-            $msg .= "*Método de Pago:* " . $metodo_pago . "\n\n";
-            $msg .= "*DETALLE DEL PEDIDO:*\n";
-
-            foreach ($carrito as $item) {
-                $subtotal_p = $item['precio'] * $item['cantidad'];
-                $msg .= "• " . $item['nombre'] . " (x" . $item['cantidad'] . ") - S/ " . number_format($subtotal_p, 2) . "\n";
-            }
-
-            $msg .= "\n*TOTAL A PAGAR:* S/ " . number_format($total, 2);
-            if ($notas) {
-                $msg .= "\n\n*Notas:* " . $notas;
-            }
-
-            $url_wa = "https://api.whatsapp.com/send?phone=" . $numero_whatsapp . "&text=" . urlencode($msg);
-            echo "<script>window.location.href='$url_wa';</script>";
-            exit;
-        }
-    }
-    ?>
-
-    <div style="max-width: 1000px; width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 40px;">
-      
-      <!-- Resumen del Pedido -->
-      <div style="background: rgba(20, 20, 20, 0.85); border: 1px solid rgba(197, 160, 89, 0.3); padding: 30px; border-radius: 8px;">
-        <h2 style="font-family: 'Cinzel', serif; color: #c5a059; margin-bottom: 20px;">Resumen de Compra</h2>
-        
-        <div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 25px;">
-          <?php foreach ($carrito as $item): ?>
-            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(197, 160, 89, 0.15); padding-bottom: 10px;">
-              <div>
-                <p style="color: #fff; margin: 0; font-weight: 500;"><?= htmlspecialchars($item['nombre']) ?></p>
-                <span style="color: #888; font-size: 0.8rem;">Cantidad: <?= $item['cantidad'] ?></span>
-              </div>
-              <span style="color: #c5a059;">S/ <?= number_format($item['precio'] * $item['cantidad'], 2) ?></span>
+      <div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 25px;">
+        <?php foreach ($carrito as $item): ?>
+          <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(197, 160, 89, 0.15); padding-bottom: 10px;">
+            <div>
+              <p style="color: #fff; margin: 0; font-weight: 500;"><?= htmlspecialchars($item['nombre']) ?></p>
+              <span style="color: #888; font-size: 0.8rem;">Cantidad: <?= $item['cantidad'] ?></span>
             </div>
-          <?php endforeach; ?>
-        </div>
-
-        <div style="display: flex; justify-content: space-between; font-size: 1.2rem; font-family: 'Cinzel', serif; color: #c5a059; border-top: 1px solid rgba(197, 160, 89, 0.3); padding-top: 15px;">
-          <span>Total a pagar</span>
-          <span>S/ <?= number_format($total, 2) ?></span>
-        </div>
-
-        <div style="margin-top: 30px; border-top: 1px solid rgba(197, 160, 89, 0.2); padding-top: 20px;">
-          <h4 style="color: #c5a059; font-family: 'Cinzel', serif; font-size: 0.9rem; margin-bottom: 10px;">MÉTODOS DE PAGO</h4>
-          <p style="color: #ccc; font-size: 0.85rem; margin: 5px 0;">Yape / Plin: <strong>982 424 158</strong></p>
-          <p style="color: #ccc; font-size: 0.85rem; margin: 5px 0;">BCP — Cuenta Soles: <strong>000-000000-0-00</strong></p>
-        </div>
+            <span style="color: #c5a059;">S/ <?= number_format($item['precio'] * $item['cantidad'], 2) ?></span>
+          </div>
+        <?php endforeach; ?>
       </div>
 
-      <!-- Formulario de Envío -->
-      <div style="background: rgba(20, 20, 20, 0.85); border: 1px solid rgba(197, 160, 89, 0.3); padding: 30px; border-radius: 8px;">
-        <h2 style="font-family: 'Cinzel', serif; color: #c5a059; margin-bottom: 20px;">Datos de Envío</h2>
-
-        <form method="POST" style="display: flex; flex-direction: column; gap: 15px;">
-          <input type="text" name="nombre" value="<?= htmlspecialchars($_SESSION['cliente_nombre'] ?? '') ?>" placeholder="Nombre completo *" required style="background: transparent; border: 1px solid rgba(197, 160, 89, 0.4); border-radius: 4px; color: #fff; padding: 10px; font-size: 0.9rem;">
-          <input type="tel" name="telefono" placeholder="Teléfono / WhatsApp *" required style="background: transparent; border: 1px solid rgba(197, 160, 89, 0.4); border-radius: 4px; color: #fff; padding: 10px; font-size: 0.9rem;">
-          <input type="email" name="email" placeholder="Correo electrónico (Opcional)" style="background: transparent; border: 1px solid rgba(197, 160, 89, 0.4); border-radius: 4px; color: #fff; padding: 10px; font-size: 0.9rem;">
-          <input type="text" name="direccion" placeholder="Dirección de envío *" required style="background: transparent; border: 1px solid rgba(197, 160, 89, 0.4); border-radius: 4px; color: #fff; padding: 10px; font-size: 0.9rem;">
-          <input type="text" name="ciudad" placeholder="Distrito / Ciudad *" required style="background: transparent; border: 1px solid rgba(197, 160, 89, 0.4); border-radius: 4px; color: #fff; padding: 10px; font-size: 0.9rem;">
-          
-          <select name="metodo_pago" required style="background: #141414; border: 1px solid rgba(197, 160, 89, 0.4); border-radius: 4px; color: #fff; padding: 10px; font-size: 0.9rem;">
-            <option value="Yape / Plin">Yape / Plin</option>
-            <option value="Transferencia BCP">Transferencia BCP</option>
-            <option value="Efectivo contraentrega">Efectivo contraentrega</option>
-          </select>
-
-          <textarea name="notas" placeholder="Referencia de dirección, horario de entrega, etc. (Opcional)" rows="3" style="background: transparent; border: 1px solid rgba(197, 160, 89, 0.4); border-radius: 4px; color: #fff; padding: 10px; font-size: 0.9rem; resize: none;"></textarea>
-
-          <button type="submit" style="background: linear-gradient(135deg, #c5a059, #9a7b3e); color: #000; border: none; padding: 14px; font-weight: 600; cursor: pointer; border-radius: 4px; font-family: 'Cinzel', serif; margin-top: 10px;">CONFIRMAR PEDIDO</button>
-        </form>
+      <div style="display: flex; justify-content: space-between; font-size: 1.2rem; font-family: 'Cinzel', serif; color: #c5a059; border-top: 1px solid rgba(197, 160, 89, 0.3); padding-top: 15px;">
+        <span>Total a pagar</span>
+        <span>S/ <?= number_format($total, 2) ?></span>
       </div>
 
+      <div style="margin-top: 30px; border-top: 1px solid rgba(197, 160, 89, 0.2); padding-top: 20px;">
+        <h4 style="color: #c5a059; font-family: 'Cinzel', serif; font-size: 0.9rem; margin-bottom: 10px;">MÉTODOS DE PAGO</h4>
+        <p style="color: #ccc; font-size: 0.85rem; margin: 5px 0;">Yape / Plin: <strong>982 424 158</strong></p>
+        <p style="color: #ccc; font-size: 0.85rem; margin: 5px 0;">BCP — Cuenta Soles: <strong>000-000000-0-00</strong></p>
+      </div>
     </div>
-  <?php endif; ?>
 
+    <!-- Formulario de Envío -->
+    <div style="background: rgba(20, 20, 20, 0.85); border: 1px solid rgba(197, 160, 89, 0.3); padding: 30px; border-radius: 8px;">
+      <h2 style="font-family: 'Cinzel', serif; color: #c5a059; margin-bottom: 20px;">Datos de Envío</h2>
+
+      <form method="POST" style="display: flex; flex-direction: column; gap: 15px;">
+        <input type="text" name="nombre" value="<?= htmlspecialchars($_SESSION['cliente_nombre'] ?? '') ?>" placeholder="Nombre completo *" required style="background: transparent; border: 1px solid rgba(197, 160, 89, 0.4); border-radius: 4px; color: #fff; padding: 10px; font-size: 0.9rem;">
+        <input type="tel" name="telefono" placeholder="Teléfono / WhatsApp *" required style="background: transparent; border: 1px solid rgba(197, 160, 89, 0.4); border-radius: 4px; color: #fff; padding: 10px; font-size: 0.9rem;">
+        <input type="email" name="email" value="<?= htmlspecialchars($_SESSION['cliente_email'] ?? '') ?>" placeholder="Correo electrónico (Opcional)" style="background: transparent; border: 1px solid rgba(197, 160, 89, 0.4); border-radius: 4px; color: #fff; padding: 10px; font-size: 0.9rem;">
+        <input type="text" name="direccion" placeholder="Dirección de envío *" required style="background: transparent; border: 1px solid rgba(197, 160, 89, 0.4); border-radius: 4px; color: #fff; padding: 10px; font-size: 0.9rem;">
+        <input type="text" name="ciudad" placeholder="Distrito / Ciudad *" required style="background: transparent; border: 1px solid rgba(197, 160, 89, 0.4); border-radius: 4px; color: #fff; padding: 10px; font-size: 0.9rem;">
+        
+        <select name="metodo_pago" required style="background: #141414; border: 1px solid rgba(197, 160, 89, 0.4); border-radius: 4px; color: #fff; padding: 10px; font-size: 0.9rem;">
+          <option value="Yape / Plin">Yape / Plin</option>
+          <option value="Transferencia BCP">Transferencia BCP</option>
+          <option value="Efectivo contraentrega">Efectivo contraentrega</option>
+        </select>
+
+        <textarea name="notas" placeholder="Referencia de dirección, horario de entrega, etc. (Opcional)" rows="3" style="background: transparent; border: 1px solid rgba(197, 160, 89, 0.4); border-radius: 4px; color: #fff; padding: 10px; font-size: 0.9rem; resize: none;"></textarea>
+
+        <button type="submit" style="background: linear-gradient(135deg, #c5a059, #9a7b3e); color: #000; border: none; padding: 14px; font-weight: 600; cursor: pointer; border-radius: 4px; font-family: 'Cinzel', serif; margin-top: 10px;">CONFIRMAR Y PAGAR</button>
+      </form>
+    </div>
+
+  </div>
 </main>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>
