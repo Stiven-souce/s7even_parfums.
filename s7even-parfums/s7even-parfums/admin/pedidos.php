@@ -1,103 +1,71 @@
 <?php
 require_once __DIR__ . '/../includes/config.php';
-require_once __DIR__ . '/../includes/productos.php';
-require_once __DIR__ . '/../includes/pedidos.php';
 
-if (empty($_SESSION['admin_autenticado'])) {
+// Verificar sesión de administrador
+if (empty($_SESSION['admin_logueado'])) {
     header('Location: login.php');
     exit;
 }
 
-// Actualizar estado de un pedido
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['numero'], $_POST['estado'])) {
-    s7_pedido_actualizar_estado($_POST['numero'], $_POST['estado']);
-    header('Location: pedidos.php');
-    exit;
+// Cargar pedidos guardados en JSON
+$pedidos_file = PEDIDOS_FILE;
+$pedidos = [];
+
+if (file_exists($pedidos_file)) {
+    $json_content = file_get_contents($pedidos_file);
+    $pedidos = json_decode($json_content, true) ?? [];
 }
 
-$pedidos = array_reverse(s7_pedidos_leer()); // más recientes primero
-$totalVentas = array_sum(array_column($pedidos, 'total'));
-
-$base = '../';
-$page_title = 'Pedidos — Panel S7even Parfums';
+// Ordenar pedidos del más reciente al más antiguo
+usort($pedidos, function($a, $b) {
+    return strtotime($b['fecha'] ?? 0) - strtotime($a['fecha'] ?? 0);
+});
 ?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title><?= htmlspecialchars($page_title) ?></title>
-<link rel="stylesheet" href="../css/style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Pedidos - Admin</title>
+    <link rel="stylesheet" href="../css/style.css">
 </head>
-<body class="admin-body">
+<body style="background: #0a0a0a; color: #fff; padding: 40px 20px; font-family: 'Poppins', sans-serif;">
+    <div style="max-width: 1100px; margin: 0 auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 1px solid rgba(197, 160, 89, 0.3); padding-bottom: 15px;">
+            <h1 style="font-family: 'Cinzel', serif; color: #c5a059; margin: 0;">Panel de Pedidos</h1>
+            <a href="logout.php" style="color: #ff5555; text-decoration: none; font-size: 0.9rem;">Cerrar Sesión</a>
+        </div>
 
-<div class="admin-topbar">
-  <img src="../assets/logo.png" alt="S7even Parfums" class="admin-topbar__logo">
-  <div class="admin-topbar__stats">
-    <span><?= count($pedidos) ?> pedidos</span>
-    <span><?= s7_formato_precio($totalVentas) ?> en total</span>
-  </div>
-  <a href="logout.php" class="btn-mini">Cerrar sesión</a>
-</div>
-
-<div class="admin-wrap">
-  <h1>Pedidos recibidos</h1>
-
-  <?php if (empty($pedidos)): ?>
-    <p>Todavía no hay pedidos registrados.</p>
-  <?php else: ?>
-    <div class="admin-tabla-wrap">
-      <table class="admin-tabla">
-        <thead>
-          <tr>
-            <th>Pedido</th>
-            <th>Fecha</th>
-            <th>Cliente</th>
-            <th>Contacto</th>
-            <th>Productos</th>
-            <th>Total</th>
-            <th>Pago</th>
-            <th>Estado</th>
-          </tr>
-        </thead>
-        <tbody>
-          <?php foreach ($pedidos as $p): ?>
-            <tr>
-              <td><?= htmlspecialchars($p['numero']) ?></td>
-              <td><?= htmlspecialchars($p['fecha']) ?></td>
-              <td>
-                <?= htmlspecialchars($p['cliente']['nombre']) ?><br>
-                <small><?= htmlspecialchars($p['cliente']['direccion']) ?>, <?= htmlspecialchars($p['cliente']['distrito']) ?></small>
-              </td>
-              <td>
-                <?= htmlspecialchars($p['cliente']['telefono']) ?><br>
-                <small><?= htmlspecialchars($p['cliente']['correo']) ?></small>
-              </td>
-              <td>
-                <?php foreach ($p['items'] as $item): ?>
-                  <div><?= (int)$item['cantidad'] ?>&times; <?= htmlspecialchars($item['nombre']) ?></div>
-                <?php endforeach; ?>
-              </td>
-              <td><?= s7_formato_precio($p['total']) ?></td>
-              <td><?= htmlspecialchars($p['cliente']['metodo_pago']) ?></td>
-              <td>
-                <form method="post" class="admin-estado-form">
-                  <input type="hidden" name="numero" value="<?= htmlspecialchars($p['numero']) ?>">
-                  <select name="estado" onchange="this.form.submit()" class="estado-<?= htmlspecialchars($p['estado']) ?>">
-                    <option value="pendiente" <?= $p['estado']==='pendiente'?'selected':'' ?>>Pendiente</option>
-                    <option value="pagado" <?= $p['estado']==='pagado'?'selected':'' ?>>Pagado</option>
-                    <option value="enviado" <?= $p['estado']==='enviado'?'selected':'' ?>>Enviado</option>
-                    <option value="cancelado" <?= $p['estado']==='cancelado'?'selected':'' ?>>Cancelado</option>
-                  </select>
-                </form>
-              </td>
-            </tr>
-          <?php endforeach; ?>
-        </tbody>
-      </table>
+        <?php if (empty($pedidos)): ?>
+            <p style="text-align: center; color: #888; padding: 40px;">No hay pedidos registrados hasta el momento.</p>
+        <?php else: ?>
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
+                    <thead>
+                        <tr style="border-bottom: 2px solid #c5a059; color: #c5a059;">
+                            <th style="padding: 12px;">Código</th>
+                            <th style="padding: 12px;">Fecha</th>
+                            <th style="padding: 12px;">Cliente</th>
+                            <th style="padding: 12px;">Teléfono</th>
+                            <th style="padding: 12px;">Método Pago</th>
+                            <th style="padding: 12px;">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($pedidos as $p): ?>
+                            <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                <td style="padding: 12px; font-weight: bold; color: #c5a059;"><?= htmlspecialchars($p['codigo'] ?? 'N/A') ?></td>
+                                <td style="padding: 12px; color: #aaa;"><?= htmlspecialchars($p['fecha'] ?? 'N/A') ?></td>
+                                <td style="padding: 12px;"><?= htmlspecialchars($p['cliente'] ?? 'N/A') ?></td>
+                                <td style="padding: 12px;"><?= htmlspecialchars($p['telefono'] ?? 'N/A') ?></td>
+                                <td style="padding: 12px;"><?= htmlspecialchars($p['metodo_pago'] ?? 'N/A') ?></td>
+                                <td style="padding: 12px; font-weight: bold;">S/ <?= number_format($p['total'] ?? 0, 2) ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        <?php endif; ?>
     </div>
-  <?php endif; ?>
-</div>
-
 </body>
 </html>
