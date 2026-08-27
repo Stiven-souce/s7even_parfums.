@@ -13,7 +13,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $file = __DIR__ . '/data/usuarios.json';
     $usuarios = file_exists($file) ? json_decode(file_get_contents($file), true) : [];
 
-    // Validar si el correo ya existe
     $existe = false;
     foreach ($usuarios as $u) {
         if ($u['email'] === $email) { $existe = true; break; }
