@@ -1,12 +1,20 @@
 <?php
 /**
- * Header compartido. Espera opcionalmente $page_title.
- * Debe incluirse DESPUÉS de config.php + productos.php + carrito.php.
+ * Header compartido.
  */
+// Carga defensiva de dependencias requeridas para el header
+require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/carrito.php';
+
 $page_title = $page_title ?? SITE_NAME;
-$contador_carrito = s7_carrito_contador();
+
+// Obtener el contador de forma segura
+$contador_carrito = function_exists('s7_carrito_contador') ? s7_carrito_contador() : 0;
+
 $cliente_logueado = isset($_SESSION['cliente_id']);
-$nombre_cliente = $cliente_logueado ? explode(' ', $_SESSION['cliente_nombre'])[0] : '';
+$nombre_cliente = ($cliente_logueado && !empty($_SESSION['cliente_nombre'])) 
+    ? explode(' ', trim($_SESSION['cliente_nombre']))[0] 
+    : '';
 ?>
 <!DOCTYPE html>
 <html lang="es">
