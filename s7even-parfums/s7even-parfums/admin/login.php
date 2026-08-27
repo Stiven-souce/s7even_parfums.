@@ -12,7 +12,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($usuario === ADMIN_USUARIO && ($password === ADMIN_CLAVE_DIRECTA || $hash_ingresado === ADMIN_PASSWORD_HASH)) {
         $_SESSION['admin_logueado'] = true;
-        header('Location: index.php');
+        // Se cambió la redirección a pedidos.php
+        header('Location: pedidos.php');
         exit;
     } else {
         $error = 'Usuario o contraseña incorrectos.';
