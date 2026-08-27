@@ -24,7 +24,7 @@ require __DIR__ . '/includes/header.php';
     <h1 class="hero__title">El instinto,<br><em>embotellado.</em></h1>
     <p class="hero__sub">Siete esencias nacidas del pulso salvaje que vive bajo la piel. Perfumería de autor para quienes no piden permiso para ser recordados.</p>
     <div class="hero__actions">
-      <a href="tienda.php" class="btn btn--gold">Ver la colección</a>
+      <a href="catalogo.php" class="btn btn--gold">Ver Catalogo</a>
       <a href="#manifiesto" class="btn btn--ghost">Nuestra historia</a>
     </div>
   </div>
@@ -158,7 +158,7 @@ require __DIR__ . '/includes/header.php';
   </div>
 
   <div class="coleccion__more">
-    <a href="tienda.php" class="btn btn--outline">Ir a la tienda completa</a>
+    <a href="catalogo.php" class="btn btn--outline">Ir a la tienda completa</a>
   </div>
 </section>
 
