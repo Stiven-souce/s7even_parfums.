@@ -14,17 +14,22 @@ $marca     = $_GET['marca'] ?? '';
 $busqueda  = $_GET['q'] ?? '';
 $orden     = $_GET['orden'] ?? 'recientes';
 
-// Consulta Supabase
+// Construcción de la Consulta para Supabase
 $query = 'productos?select=*';
-if ($categoria !== 'Todos') {
-    $query .= '&categoria=eq.' . urlencode($categoria);
+
+if (!empty($categoria) && strtolower($categoria) !== 'todos') {
+    // ilike permite coincidencia de texto sin importar mayúsculas/minúsculas
+    $query .= '&categoria=ilike.' . urlencode($categoria);
 }
+
 if (!empty($genero)) {
-    $query .= '&genero=eq.' . urlencode($genero);
+    $query .= '&genero=ilike.' . urlencode($genero);
 }
+
 if (!empty($marca)) {
     $query .= '&marca=eq.' . urlencode($marca);
 }
+
 if (!empty($busqueda)) {
     $query .= '&nombre=ilike.*' . urlencode($busqueda) . '*';
 }
@@ -41,6 +46,17 @@ $productos = supabase_request($query, 'GET') ?? [];
 
 // Cargar Header elegante
 require_once __DIR__ . '/includes/header.php';
+
+// Helper para mantener los parámetros en las URLs de las pestañas
+function build_url($param, $valor) {
+    $params = $_GET;
+    if ($valor === '' || $valor === 'Todos') {
+        unset($params[$param]);
+    } else {
+        $params[$param] = $valor;
+    }
+    return 'catalogo.php?' . http_build_query($params);
+}
 ?>
 
 <style>
@@ -329,9 +345,9 @@ body {
                 <label>Categoría</label>
                 <select name="categoria">
                     <option value="Todos">Todas</option>
-                    <option value="Diseñador" <?= $categoria === 'Diseñador' ? 'selected' : '' ?>>Diseñador</option>
-                    <option value="Árabes" <?= $categoria === 'Árabes' ? 'selected' : '' ?>>Árabes</option>
-                    <option value="Nichos" <?= $categoria === 'Nichos' ? 'selected' : '' ?>>Nichos</option>
+                    <option value="Diseñador" <?= strtolower($categoria) === 'diseñador' ? 'selected' : '' ?>>Diseñador</option>
+                    <option value="Árabes" <?= strtolower($categoria) === 'árabes' ? 'selected' : '' ?>>Árabes</option>
+                    <option value="Nichos" <?= strtolower($categoria) === 'nichos' ? 'selected' : '' ?>>Nichos</option>
                 </select>
             </div>
 
@@ -339,9 +355,9 @@ body {
                 <label>Género</label>
                 <select name="genero">
                     <option value="">Todos</option>
-                    <option value="Hombre" <?= $genero === 'Hombre' ? 'selected' : '' ?>>Hombre</option>
-                    <option value="Mujer" <?= $genero === 'Mujer' ? 'selected' : '' ?>>Mujer</option>
-                    <option value="Unisex" <?= $genero === 'Unisex' ? 'selected' : '' ?>>Unisex</option>
+                    <option value="Hombre" <?= strtolower($genero) === 'hombre' ? 'selected' : '' ?>>Hombre</option>
+                    <option value="Mujer" <?= strtolower($genero) === 'mujer' ? 'selected' : '' ?>>Mujer</option>
+                    <option value="Unisex" <?= strtolower($genero) === 'unisex' ? 'selected' : '' ?>>Unisex</option>
                 </select>
             </div>
 
@@ -361,19 +377,19 @@ body {
         <h1 class="cat-title">Todos los productos</h1>
 
         <div class="cat-pills">
-            <a href="catalogo.php?categoria=Todos" class="pill-item <?= $categoria === 'Todos' ? 'active' : '' ?>">TODOS</a>
-            <a href="catalogo.php?categoria=Diseñador" class="pill-item <?= $categoria === 'Diseñador' ? 'active' : '' ?>">DISEÑADOR</a>
-            <a href="catalogo.php?categoria=Árabes" class="pill-item <?= $categoria === 'Árabes' ? 'active' : '' ?>">ÁRABES</a>
-            <a href="catalogo.php?categoria=Nichos" class="pill-item <?= $categoria === 'Nichos' ? 'active' : '' ?>">NICHOS</a>
+            <a href="<?= build_url('categoria', 'Todos') ?>" class="pill-item <?= strtolower($categoria) === 'todos' ? 'active' : '' ?>">TODOS</a>
+            <a href="<?= build_url('categoria', 'Diseñador') ?>" class="pill-item <?= strtolower($categoria) === 'diseñador' ? 'active' : '' ?>">DISEÑADOR</a>
+            <a href="<?= build_url('categoria', 'Árabes') ?>" class="pill-item <?= strtolower($categoria) === 'árabes' ? 'active' : '' ?>">ÁRABES</a>
+            <a href="<?= build_url('categoria', 'Nichos') ?>" class="pill-item <?= strtolower($categoria) === 'nichos' ? 'active' : '' ?>">NICHOS</a>
         </div>
 
         <div class="cat-topbar">
             <span class="cat-count"><?= count($productos) ?> resultado(s) encontrados</span>
             <div class="cat-sort">
                 <select onchange="location = this.value;">
-                    <option value="catalogo.php?orden=recientes">Más recientes</option>
-                    <option value="catalogo.php?orden=precio_asc" <?= $orden === 'precio_asc' ? 'selected' : '' ?>>Precio menor</option>
-                    <option value="catalogo.php?orden=precio_desc" <?= $orden === 'precio_desc' ? 'selected' : '' ?>>Precio mayor</option>
+                    <option value="<?= build_url('orden', 'recientes') ?>">Más recientes</option>
+                    <option value="<?= build_url('orden', 'precio_asc') ?>" <?= $orden === 'precio_asc' ? 'selected' : '' ?>>Precio menor</option>
+                    <option value="<?= build_url('orden', 'precio_desc') ?>" <?= $orden === 'precio_desc' ? 'selected' : '' ?>>Precio mayor</option>
                 </select>
             </div>
         </div>
@@ -401,7 +417,6 @@ body {
 </div>
 
 <?php 
-// Si cuentas con un footer centralizado
 if (file_exists(__DIR__ . '/includes/footer.php')) {
     require_once __DIR__ . '/includes/footer.php';
 } else {
