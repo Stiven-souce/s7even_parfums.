@@ -22,10 +22,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!empty($resultado) && isset($resultado[0])) {
             $error = 'El correo electrónico ya está registrado.';
         } else {
-            $nuevo_id = 'CLI-' . strtoupper(substr(uniqid(), -6));
-            
+            // Omitimos el 'id' para que Supabase lo genere como entero autoincrementable
             $nuevo_cliente = [
-                'id' => $nuevo_id,
                 'nombre' => $nombre,
                 'email' => $email,
                 'password' => password_hash($password, PASSWORD_DEFAULT),
@@ -35,11 +33,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Insertar nuevo usuario en Supabase
             $respuesta = supabase_request('clientes', 'POST', $nuevo_cliente);
 
-            if (isset($respuesta['error'])) {
-                $error = 'Error al registrar el usuario en la base de datos. Inténtalo de nuevo.';
+            if (isset($respuesta['error']) || empty($respuesta)) {
+                $error = 'Error al registrar el usuario en la base de datos.';
             } else {
+                // Supabase retorna el arreglo del registro recién insertado con su ID numérico
+                $usuario_creado = $respuesta[0] ?? $respuesta;
+
                 // Iniciar sesión automáticamente tras crear la cuenta
-                $_SESSION['cliente_id'] = $nuevo_id;
+                $_SESSION['cliente_id'] = $usuario_creado['id'] ?? null;
                 $_SESSION['cliente_nombre'] = $nombre;
                 $_SESSION['cliente_email'] = $email;
 
