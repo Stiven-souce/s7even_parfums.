@@ -40,13 +40,13 @@ $nombre_cliente = ($cliente_logueado && !empty($_SESSION['cliente_nombre']))
     <nav class="nav__links">
       <a href="<?= $base ?? '' ?>index.php#manifiesto">Manifiesto</a>
       <a href="<?= $base ?? '' ?>index.php#piramide">La Esencia</a>
-      <a href="<?= $base ?? '' ?>tienda.php">Tienda</a>
+      <a href="<?= $base ?? '' ?>catalogo.php">Catálogo</a>
       <a href="<?= $base ?? '' ?>index.php#contacto">Contacto</a>
     </nav>
 
     <div class="nav__actions" style="display: flex; align-items: center; gap: 15px;">
       <!-- Buscador -->
-      <form action="<?= $base ?? '' ?>tienda.php" method="GET" class="nav__search-form" style="display: flex; align-items: center;">
+      <form action="<?= $base ?? '' ?>catalogo.php" method="GET" class="nav__search-form" style="display: flex; align-items: center;">
         <input type="text" name="q" placeholder="Buscar..." class="nav__search-input" style="background: transparent; border: 1px solid rgba(197, 160, 89, 0.4); border-radius: 4px; color: #fff; padding: 4px 8px; font-size: 12px; outline: none; width: 100px;">
         <button type="submit" style="background: none; border: none; color: #c5a059; cursor: pointer; padding-left: 5px;" title="Buscar">
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
