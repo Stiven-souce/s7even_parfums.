@@ -1,15 +1,20 @@
 <?php
+/**
+ * Catálogo Elegante — S7even Parfums
+ */
 require_once __DIR__ . '/includes/config.php';
 require_once __DIR__ . '/includes/db.php';
 
-// Filtros desde GET
+$page_title = "Catálogo Exclusivo — S7even Parfums";
+
+// Filtros GET
 $categoria = $_GET['categoria'] ?? 'Todos';
 $genero    = $_GET['genero'] ?? '';
 $marca     = $_GET['marca'] ?? '';
 $busqueda  = $_GET['q'] ?? '';
 $orden     = $_GET['orden'] ?? 'recientes';
 
-// Construcción de consulta a Supabase
+// Consulta Supabase
 $query = 'productos?select=*';
 if ($categoria !== 'Todos') {
     $query .= '&categoria=eq.' . urlencode($categoria);
@@ -24,7 +29,6 @@ if (!empty($busqueda)) {
     $query .= '&nombre=ilike.*' . urlencode($busqueda) . '*';
 }
 
-// Orden
 if ($orden === 'precio_asc') {
     $query .= '&order=precio.asc';
 } elseif ($orden === 'precio_desc') {
@@ -34,46 +38,294 @@ if ($orden === 'precio_asc') {
 }
 
 $productos = supabase_request($query, 'GET') ?? [];
+
+// Cargar Header elegante
+require_once __DIR__ . '/includes/header.php';
 ?>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Catálogo — S7even Parfums</title>
-    <link rel="stylesheet" href="css/style.css">
-    <style>
-        .catalogo-container { display: flex; gap: 30px; max-width: 1200px; margin: 40px auto; padding: 0 20px; }
-        .sidebar-filtros { width: 260px; background: #fff; padding: 20px; border-radius: 12px; border: 1px solid #eee; height: fit-content; }
-        .sidebar-filtros h3 { font-family: 'Cinzel', serif; margin-bottom: 5px; }
-        .filtro-group { margin-bottom: 15px; }
-        .filtro-group label { font-size: 0.85rem; font-weight: 600; display: block; margin-bottom: 5px; }
-        .filtro-group select, .filtro-group input { width: 100%; padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; }
-        
-        .main-catalogo { flex: 1; }
-        .pills-categoria { display: flex; gap: 10px; margin-bottom: 25px; }
-        .pill-btn { padding: 8px 18px; border-radius: 20px; border: 1px solid #e0e0e0; background: #fff; text-decoration: none; color: #333; font-size: 0.85rem; }
-        .pill-btn.active { background: #000; color: #fff; border-color: #000; }
 
-        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .grid-productos { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
-        .card-producto { background: #fff; border-radius: 12px; padding: 15px; text-decoration: none; color: #000; border: 1px solid #f0f0f0; transition: transform 0.2s; position: relative; }
-        .card-producto:hover { transform: translateY(-3px); }
-        .card-tag { position: absolute; top: 10px; left: 10px; background: #fff3e0; color: #e65100; font-size: 0.75rem; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
-        .card-img { width: 100%; height: 200px; object-fit: contain; margin-bottom: 15px; }
-        .card-precio { font-weight: bold; font-size: 1.1rem; text-align: center; margin-top: 10px; }
-        .card-marca { text-align: center; font-size: 0.8rem; color: #777; text-transform: uppercase; margin-top: 5px; }
-    </style>
-</head>
-<body style="background:#f8f9fa;">
+<style>
+/* Estilos Exclusivos Catálogo Dark Luxury */
+body {
+    background-color: #0b0b0b;
+    color: #e5e5e5;
+    font-family: 'Poppins', sans-serif;
+}
 
-<div class="catalogo-container">
-    <!-- BARRA LATERAL FILTROS -->
-    <aside class="sidebar-filtros">
-        <h3>Filtrar</h3>
-        <p style="font-size: 0.8rem; color:#666; margin-bottom:20px;">Encuentra tu fragancia ideal</p>
+.cat-wrapper {
+    max-width: 1300px;
+    margin: 40px auto 80px auto;
+    padding: 0 20px;
+    display: flex;
+    gap: 40px;
+}
+
+/* Sidebar Filtros */
+.cat-sidebar {
+    width: 280px;
+    background: rgba(18, 18, 18, 0.85);
+    border: 1px solid rgba(197, 160, 89, 0.25);
+    border-radius: 8px;
+    padding: 25px;
+    height: fit-content;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.cat-sidebar h3 {
+    font-family: 'Cinzel', serif;
+    color: #c5a059;
+    font-size: 1.3rem;
+    margin-bottom: 5px;
+    letter-spacing: 1px;
+}
+
+.cat-sidebar p {
+    font-size: 0.8rem;
+    color: #888;
+    margin-bottom: 25px;
+}
+
+.filter-group {
+    margin-bottom: 20px;
+}
+
+.filter-group label {
+    display: block;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #c5a059;
+    margin-bottom: 8px;
+}
+
+.filter-group select, 
+.filter-group input {
+    width: 100%;
+    background: #050505;
+    border: 1px solid rgba(197, 160, 89, 0.3);
+    color: #fff;
+    padding: 10px 12px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    outline: none;
+    transition: border 0.3s ease;
+}
+
+.filter-group select:focus, 
+.filter-group input:focus {
+    border-color: #c5a059;
+}
+
+.btn-filter {
+    width: 100%;
+    background: linear-gradient(135deg, #c5a059 0%, #9e7d3b 100%);
+    color: #000;
+    font-weight: 600;
+    padding: 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.8rem;
+    transition: all 0.3s ease;
+}
+
+.btn-filter:hover {
+    box-shadow: 0 0 15px rgba(197, 160, 89, 0.4);
+    transform: translateY(-1px);
+}
+
+.btn-reset {
+    display: block;
+    text-align: center;
+    color: #888;
+    font-size: 0.75rem;
+    margin-top: 15px;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.btn-reset:hover {
+    color: #c5a059;
+}
+
+/* Main Content */
+.cat-main {
+    flex: 1;
+}
+
+.cat-subtitle {
+    font-size: 0.75rem;
+    letter-spacing: 3px;
+    color: #c5a059;
+    text-transform: uppercase;
+    display: block;
+}
+
+.cat-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.8rem;
+    font-weight: 300;
+    color: #fff;
+    margin: 5px 0 25px 0;
+}
+
+/* Pills Categorías */
+.cat-pills {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+}
+
+.pill-item {
+    padding: 8px 24px;
+    border-radius: 30px;
+    border: 1px solid rgba(197, 160, 89, 0.3);
+    background: transparent;
+    color: #ccc;
+    text-decoration: none;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+    transition: all 0.3s;
+}
+
+.pill-item:hover,
+.pill-item.active {
+    background: #c5a059;
+    color: #000;
+    border-color: #c5a059;
+    font-weight: 600;
+    box-shadow: 0 0 12px rgba(197, 160, 89, 0.3);
+}
+
+/* Bar de Orden y Contador */
+.cat-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    padding-bottom: 15px;
+    margin-bottom: 30px;
+}
+
+.cat-count {
+    font-size: 0.85rem;
+    color: #888;
+}
+
+.cat-sort select {
+    background: #050505;
+    color: #ccc;
+    border: 1px solid rgba(197, 160, 89, 0.3);
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+}
+
+/* Grid de Productos */
+.cat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 25px;
+}
+
+.prod-card {
+    background: rgba(18, 18, 18, 0.6);
+    border: 1px solid rgba(197, 160, 89, 0.15);
+    border-radius: 8px;
+    padding: 20px;
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.prod-card:hover {
+    border-color: #c5a059;
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.7);
+}
+
+.prod-tag {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: rgba(197, 160, 89, 0.15);
+    color: #c5a059;
+    border: 1px solid rgba(197, 160, 89, 0.3);
+    font-size: 0.65rem;
+    padding: 2px 8px;
+    border-radius: 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.prod-img-box {
+    height: 220px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 15px;
+}
+
+.prod-img {
+    max-height: 100%;
+    max-width: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 5px 15px rgba(0,0,0,0.6));
+    transition: transform 0.3s ease;
+}
+
+.prod-card:hover .prod-img {
+    transform: scale(1.05);
+}
+
+.prod-brand {
+    font-size: 0.7rem;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    text-align: center;
+}
+
+.prod-title {
+    font-family: 'Cinzel', serif;
+    font-size: 1rem;
+    color: #fff;
+    text-align: center;
+    margin: 5px 0 10px 0;
+}
+
+.prod-price {
+    font-size: 1.1rem;
+    color: #c5a059;
+    font-weight: 500;
+    text-align: center;
+}
+
+.empty-msg {
+    text-align: center;
+    padding: 60px 0;
+    color: #666;
+    grid-column: 1 / -1;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.5rem;
+}
+</style>
+
+<div class="cat-wrapper">
+    <!-- FILTROS LATERALES -->
+    <aside class="cat-sidebar">
+        <h3>FILTRAR</h3>
+        <p>Encuentra tu fragancia ideal</p>
 
         <form method="GET" action="catalogo.php">
-            <div class="filtro-group">
+            <div class="filter-group">
                 <label>Categoría</label>
                 <select name="categoria">
                     <option value="Todos">Todas</option>
@@ -83,7 +335,7 @@ $productos = supabase_request($query, 'GET') ?? [];
                 </select>
             </div>
 
-            <div class="filtro-group">
+            <div class="filter-group">
                 <label>Género</label>
                 <select name="genero">
                     <option value="">Todos</option>
@@ -93,50 +345,66 @@ $productos = supabase_request($query, 'GET') ?? [];
                 </select>
             </div>
 
-            <div class="filtro-group">
+            <div class="filter-group">
                 <label>Buscar</label>
-                <input type="text" name="q" placeholder="Buscar perfume, marca..." value="<?= htmlspecialchars($busqueda) ?>">
+                <input type="text" name="q" placeholder="Perfume, notas..." value="<?= htmlspecialchars($busqueda) ?>">
             </div>
 
-            <button type="submit" style="width:100%; background:#000; color:#fff; padding:10px; border:none; border-radius:6px; font-weight:bold; cursor:pointer;">Aplicar filtros</button>
-            <a href="catalogo.php" style="display:block; text-align:center; font-size:0.8rem; color:#666; margin-top:10px; text-decoration:none;">Limpiar filtros</a>
+            <button type="submit" class="btn-filter">Aplicar filtros</button>
+            <a href="catalogo.php" class="btn-reset">Limpiar filtros</a>
         </form>
     </aside>
 
-    <!-- LISTA DE PRODUCTOS -->
-    <main class="main-catalogo">
-        <span style="font-size:0.8rem; letter-spacing:1px; color:#888;">NUESTRA COLECCIÓN</span>
-        <h1 style="font-family:'Cinzel',serif; margin:0 0 15px 0;">Todos los productos</h1>
+    <!-- LISTADO PRODUCTOS -->
+    <main class="cat-main">
+        <span class="cat-subtitle">NUESTRA COLECCIÓN</span>
+        <h1 class="cat-title">Todos los productos</h1>
 
-        <div class="pills-categoria">
-            <a href="catalogo.php?categoria=Todos" class="pill-btn <?= $categoria === 'Todos' ? 'active' : '' ?>">Todos</a>
-            <a href="catalogo.php?categoria=Diseñador" class="pill-btn <?= $categoria === 'Diseñador' ? 'active' : '' ?>">DISEÑADOR</a>
-            <a href="catalogo.php?categoria=Árabes" class="pill-btn <?= $categoria === 'Árabes' ? 'active' : '' ?>">ÁRABES</a>
-            <a href="catalogo.php?categoria=Nichos" class="pill-btn <?= $categoria === 'Nichos' ? 'active' : '' ?>">NICHOS</a>
+        <div class="cat-pills">
+            <a href="catalogo.php?categoria=Todos" class="pill-item <?= $categoria === 'Todos' ? 'active' : '' ?>">TODOS</a>
+            <a href="catalogo.php?categoria=Diseñador" class="pill-item <?= $categoria === 'Diseñador' ? 'active' : '' ?>">DISEÑADOR</a>
+            <a href="catalogo.php?categoria=Árabes" class="pill-item <?= $categoria === 'Árabes' ? 'active' : '' ?>">ÁRABES</a>
+            <a href="catalogo.php?categoria=Nichos" class="pill-item <?= $categoria === 'Nichos' ? 'active' : '' ?>">NICHOS</a>
         </div>
 
-        <div class="top-bar">
-            <span style="font-size:0.85rem; color:#666;"><?= count($productos) ?> resultado(s) encontrados</span>
-            <select onchange="location = this.value;" style="padding:6px 12px; border-radius:6px; border:1px solid #ccc;">
-                <option value="catalogo.php?orden=recientes">Más recientes</option>
-                <option value="catalogo.php?orden=precio_asc">Precio menor</option>
-                <option value="catalogo.php?orden=precio_desc">Precio mayor</option>
-            </select>
+        <div class="cat-topbar">
+            <span class="cat-count"><?= count($productos) ?> resultado(s) encontrados</span>
+            <div class="cat-sort">
+                <select onchange="location = this.value;">
+                    <option value="catalogo.php?orden=recientes">Más recientes</option>
+                    <option value="catalogo.php?orden=precio_asc" <?= $orden === 'precio_asc' ? 'selected' : '' ?>>Precio menor</option>
+                    <option value="catalogo.php?orden=precio_desc" <?= $orden === 'precio_desc' ? 'selected' : '' ?>>Precio mayor</option>
+                </select>
+            </div>
         </div>
 
-        <div class="grid-productos">
-            <?php foreach ($productos as $prod): ?>
-                <a href="producto.php?id=<?= $prod['id'] ?>" class="card-producto">
-                    <span class="card-tag">Importado</span>
-                    <img src="<?= htmlspecialchars($prod['imagen'] ?? 'img/placeholder.jpg') ?>" class="card-img" alt="<?= htmlspecialchars($prod['nombre']) ?>">
-                    <div style="font-weight:600; text-align:center; font-size:0.95rem;"><?= htmlspecialchars($prod['nombre']) ?></div>
-                    <div class="card-precio">S/ <?= number_format($prod['precio'], 2) ?></div>
-                    <div class="card-marca"><?= htmlspecialchars($prod['marca'] ?? 'S7even') ?></div>
-                </a>
-            <?php endforeach; ?>
+        <div class="cat-grid">
+            <?php if (!empty($productos)): ?>
+                <?php foreach ($productos as $prod): ?>
+                    <a href="producto.php?id=<?= $prod['id'] ?>" class="prod-card">
+                        <span class="prod-tag"><?= htmlspecialchars($prod['categoria'] ?? 'Exclusivo') ?></span>
+                        <div class="prod-img-box">
+                            <img src="<?= htmlspecialchars($prod['imagen'] ?? 'assets/logo.png') ?>" class="prod-img" alt="<?= htmlspecialchars($prod['nombre']) ?>">
+                        </div>
+                        <div>
+                            <div class="prod-brand"><?= htmlspecialchars($prod['marca'] ?? 'S7even Parfums') ?></div>
+                            <h2 class="prod-title"><?= htmlspecialchars($prod['nombre']) ?></h2>
+                            <div class="prod-price">S/ <?= number_format($prod['precio'], 2) ?></div>
+                        </div>
+                    </a>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <div class="empty-msg">No se encontraron fragancias con los criterios seleccionados.</div>
+            <?php endif; ?>
         </div>
     </main>
 </div>
 
-</body>
-</html>
+<?php 
+// Si cuentas con un footer centralizado
+if (file_exists(__DIR__ . '/includes/footer.php')) {
+    require_once __DIR__ . '/includes/footer.php';
+} else {
+    echo '</body></html>';
+}
+?>
