@@ -3,28 +3,40 @@ require_once __DIR__ . '/includes/config.php';
 require_once __DIR__ . '/includes/productos.php';
 require_once __DIR__ . '/includes/carrito.php';
 
-// Obtener el carrito usando la función nativa del sistema si existe, o validar la sesión directamente
-$carrito_raw = function_exists('s7_carrito_obtener') ? s7_carrito_obtener() : ($_SESSION['carrito'] ?? []);
-
-// Normalizar y filtrar el carrito para asegurar que cada ítem sea un array estructurado
+// Obtener carrito de la sesión de manera tolerante a cualquier formato
+$raw_cart = $_SESSION['carrito'] ?? [];
 $carrito = [];
 $total = 0;
 
-if (is_array($carrito_raw)) {
-    foreach ($carrito_raw as $key => $item) {
+if (is_array($raw_cart)) {
+    foreach ($raw_cart as $id => $item) {
         if (is_array($item)) {
-            $precio = floatval($item['precio'] ?? 0);
-            $cantidad = intval($item['cantidad'] ?? 1);
-            $total += ($precio * $cantidad);
-            $carrito[] = $item;
+            $cant = intval($item['cantidad'] ?? 1);
+            $prec = floatval($item['precio'] ?? 0);
+            $nom = $item['nombre'] ?? 'Producto S7even';
+            $carrito[] = [
+                'id' => $id,
+                'nombre' => $nom,
+                'precio' => $prec,
+                'cantidad' => $cant
+            ];
+            $total += ($prec * $cant);
+        } elseif (is_numeric($item)) {
+            // Caso en el que el carrito guarda ID => Cantidad
+            $p_info = s7_obtener_producto($id);
+            if ($p_info) {
+                $cant = intval($item);
+                $prec = floatval($p_info['precio']);
+                $carrito[] = [
+                    'id' => $id,
+                    'nombre' => $p_info['nombre'],
+                    'precio' => $prec,
+                    'cantidad' => $cant
+                ];
+                $total += ($prec * $cant);
+            }
         }
     }
-}
-
-// Si el carrito procesado está vacío, volver a la tienda
-if (empty($carrito)) {
-    header('Location: tienda.php');
-    exit;
 }
 
 $page_title = 'Finalizar Pedido - S7even Parfums';
@@ -40,8 +52,8 @@ require_once __DIR__ . '/includes/header.php';
       <p style="color: #ccc; margin-bottom: 25px; line-height: 1.5;">Para poder procesar tu pedido y brindarte un seguimiento personalizado, por favor ingresa a tu cuenta.</p>
       
       <div style="display: flex; flex-direction: column; gap: 15px;">
-        <a href="login.php?redirect=checkout" style="background: linear-gradient(135deg, #c5a059, #9a7b3e); color: #000; padding: 12px; font-weight: 600; text-decoration: none; border-radius: 4px; font-family: 'Cinzel', serif;">INICIAR SESIÓN</a>
-        <a href="registro.php?redirect=checkout" style="border: 1px solid #c5a059; color: #c5a059; padding: 12px; font-weight: 600; text-decoration: none; border-radius: 4px; font-family: 'Cinzel', serif;">CREAR UNA CUENTA</a>
+        <a href="login.php?redirect=checkout" style="background: linear-gradient(135deg, #c5a059, #9a7b3e); color: #000; padding: 12px; font-weight: 600; text-decoration: none; border-radius: 4px; font-family: 'Cinzel', serif; display: block;">INICIAR SESIÓN</a>
+        <a href="registro.php?redirect=checkout" style="border: 1px solid #c5a059; color: #c5a059; padding: 12px; font-weight: 600; text-decoration: none; border-radius: 4px; font-family: 'Cinzel', serif; display: block;">CREAR UNA CUENTA</a>
       </div>
     </div>
 
@@ -85,11 +97,7 @@ require_once __DIR__ . '/includes/header.php';
             file_put_contents($file_pedidos, json_encode($pedidos, JSON_PRETTY_PRINT));
 
             // Vaciar el carrito
-            if (function_exists('s7_carrito_vaciar')) {
-                s7_carrito_vaciar();
-            } else {
-                $_SESSION['carrito'] = [];
-            }
+            $_SESSION['carrito'] = [];
 
             $msg  = "✨ *NUEVO PEDIDO - S7EVEN PARFUMS* ✨\n";
             $msg .= "*Código:* " . $nuevo_pedido['id'] . "\n\n";
@@ -100,10 +108,8 @@ require_once __DIR__ . '/includes/header.php';
             $msg .= "*DETALLE DEL PEDIDO:*\n";
 
             foreach ($carrito as $item) {
-                $nombre_p = $item['nombre'] ?? 'Producto';
-                $cant_p = $item['cantidad'] ?? 1;
-                $subtotal_p = ($item['precio'] ?? 0) * $cant_p;
-                $msg .= "• " . $nombre_p . " (x" . $cant_p . ") - S/ " . number_format($subtotal_p, 2) . "\n";
+                $subtotal_p = $item['precio'] * $item['cantidad'];
+                $msg .= "• " . $item['nombre'] . " (x" . $item['cantidad'] . ") - S/ " . number_format($subtotal_p, 2) . "\n";
             }
 
             $msg .= "\n*TOTAL A PAGAR:* S/ " . number_format($total, 2);
@@ -128,10 +134,10 @@ require_once __DIR__ . '/includes/header.php';
           <?php foreach ($carrito as $item): ?>
             <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(197, 160, 89, 0.15); padding-bottom: 10px;">
               <div>
-                <p style="color: #fff; margin: 0; font-weight: 500;"><?= htmlspecialchars($item['nombre'] ?? 'Producto') ?></p>
-                <span style="color: #888; font-size: 0.8rem;">Cantidad: <?= $item['cantidad'] ?? 1 ?></span>
+                <p style="color: #fff; margin: 0; font-weight: 500;"><?= htmlspecialchars($item['nombre']) ?></p>
+                <span style="color: #888; font-size: 0.8rem;">Cantidad: <?= $item['cantidad'] ?></span>
               </div>
-              <span style="color: #c5a059;">S/ <?= number_format(($item['precio'] ?? 0) * ($item['cantidad'] ?? 1), 2) ?></span>
+              <span style="color: #c5a059;">S/ <?= number_format($item['precio'] * $item['cantidad'], 2) ?></span>
             </div>
           <?php endforeach; ?>
         </div>
