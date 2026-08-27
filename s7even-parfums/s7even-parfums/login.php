@@ -55,9 +55,8 @@ require_once __DIR__ . '/includes/header.php';
       <button type="submit" style="background: linear-gradient(135deg, #c5a059, #9a7b3e); color: #000; border: none; padding: 12px; font-weight: 600; cursor: pointer; border-radius: 4px; font-family: 'Cinzel', serif;">INGRESAR</button>
     </form>
 
-    <div style="margin-top: 20px; display: flex; justify-content: space-between; font-size: 0.85rem;">
+    <div style="margin-top: 20px; text-align: left; font-size: 0.85rem;">
       <a href="registro.php" style="color: #c5a059; text-decoration: none;">Crear cuenta</a>
-      <a href="admin/login.php" style="color: #888; text-decoration: none;">Acceso Admin</a>
     </div>
   </div>
 </main>
