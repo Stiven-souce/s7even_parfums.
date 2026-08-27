@@ -14,16 +14,16 @@ if (session_status() === PHP_SESSION_NONE) {
 
 // ---- Datos de contacto / pago ----
 define('SITE_NAME', 'S7even Parfums');
-define('WHATSAPP_NUMERO', '51900000000');           // sin "+", solo dígitos
+define('WHATSAPP_NUMERO', '51982424158');           // sin "+", solo dígitos
 define('CORREO_CONTACTO', 'hola@s7evenparfums.com');
-define('YAPE_PLIN_NUMERO', '900 000 000');
+define('YAPE_PLIN_NUMERO', '982 424 158');
 define('CUENTA_BANCARIA', 'BCP — Cuenta Soles 000-000000-0-00');
 
 // ---- Panel admin ----
 // Contraseña por defecto: "s7even2026" — CÁMBIALA antes de publicar el sitio.
 // La contraseña se guarda como SHA-256(contraseña + ADMIN_SALT), nunca en texto plano.
 // Para generar tu propio hash, ejecuta en tu terminal (con PHP instalado):
-//   php -r "echo hash('sha256', 'tu-nueva-clave' . 's7even_salt_2026');"
+//    php -r "echo hash('sha256', 'tu-nueva-clave' . 's7even_salt_2026');"
 // y reemplaza el valor de ADMIN_PASSWORD_HASH de abajo.
 define('ADMIN_USUARIO', 'admin');
 define('ADMIN_SALT', 's7even_salt_2026');
