@@ -11,7 +11,7 @@ function s7_catalogo(): array {
             'numero'      => 'No. I',
             'nombre'      => 'HAWAS LAVA GOLD',
             'notas'       => 'Oud · Cuero · Pimienta negra',
-            'descripcion' => 'Una fragancia magnética y refinada con acordes cálidos de madera y un toque especiado único, diseñada para destacar en momentos especiales.',
+            'descripcion' => 'Hawas Lava Gold es la encarnación del lujo misterioso y la fuerza masculina. Inicia con un contraste vibrante de piña y manzana sobre un corazón dominante de cuero y especias oscuras. Su fondo de ámbar dulce y madura madera de oud deja una huella dorada, cálida e inolvidable a tu paso.',
             'precio'      => 175.00,
             'clase'       => 'frasco--onix',
             'stock'       => 25,
