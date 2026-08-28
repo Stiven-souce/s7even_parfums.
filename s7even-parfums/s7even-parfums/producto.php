@@ -1,107 +1,165 @@
 <?php
 require_once __DIR__ . '/includes/config.php';
-require_once __DIR__ . '/includes/db.php';
+require_once __DIR__ . '/includes/productos.php';
 
-$id = $_GET['id'] ?? 0;
-$res = supabase_request('productos?id=eq.' . intval($id), 'GET');
+// Cargar DB si existe el archivo
+if (file_exists(__DIR__ . '/includes/db.php')) {
+    require_once __DIR__ . '/includes/db.php';
+}
 
-if (empty($res)) {
+$id = $_GET['id'] ?? '';
+$producto = null;
+
+// 1. Buscar primero en catálogo local (includes/productos.php)
+if (!empty($id)) {
+    $producto = s7_producto($id);
+}
+
+// 2. Si no está en el array local y la función supabase_request existe, buscar en Supabase
+if (!$producto && !empty($id) && function_exists('supabase_request')) {
+    $query = 'productos?id=eq.' . urlencode($id);
+    $res = supabase_request($query, 'GET');
+
+    if (is_array($res) && !empty($res) && isset($res[0])) {
+        $producto = $res[0];
+    } else {
+        // Intento por slug/nombre
+        $querySlug = 'productos?nombre=ilike.' . urlencode(str_replace('-', ' ', $id));
+        $resSlug = supabase_request($querySlug, 'GET');
+        if (is_array($resSlug) && !empty($resSlug) && isset($resSlug[0])) {
+            $producto = $resSlug[0];
+        }
+    }
+}
+
+// 3. Si sigue sin existir, redirigir al catálogo para evitar pantallas en blanco o con errores
+if (!$producto) {
     header('Location: catalogo.php');
     exit;
 }
 
-$p = $res[0];
-$link_wa = "https://wa.me/" . WHATSAPP_NUMERO . "?text=" . urlencode("Hola S7even Parfums, deseo consultar sobre el perfume: " . $p['nombre']);
+// Sanitización de variables para prevenir Warnings y PHP 8 Deprecations
+$nombre    = $producto['nombre'] ?? 'Producto S7even';
+$categoria = $producto['categoria'] ?? 'Árabes';
+$marca     = $producto['marca'] ?? 'S7EVEN';
+$precio    = (float)($producto['precio'] ?? 0);
+$notas     = $producto['notas'] ?? $producto['descripcion'] ?? 'Fragancia exclusiva de alta duración con proyección elegante y refinada.';
+$imagen    = $producto['imagen'] ?? '';
+$clase     = $producto['clase'] ?? 'frasco--dorado';
+
+$page_title = htmlspecialchars($nombre) . " — S7even Parfums";
+require __DIR__ . '/includes/header.php';
 ?>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title><?= htmlspecialchars($p['nombre']) ?> — S7even Parfums</title>
-    <link rel="stylesheet" href="css/style.css">
-    <style>
-        .p-container { max-width: 1100px; margin: 40px auto; padding: 0 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
-        .p-galeria { display: flex; gap: 15px; }
-        .p-thumb { width: 70px; height: 70px; border: 1px solid #ccc; border-radius: 8px; padding: 5px; cursor: pointer; object-fit: contain; }
-        .p-img-main { width: 100%; max-height: 450px; object-fit: contain; background: #fff; border-radius: 12px; padding: 20px; }
-        
-        .p-info-box { background: #fff; padding: 30px; border-radius: 12px; border: 1px solid #f0f0f0; }
-        .p-badge { background: #f0f4f8; color: #334e68; font-size: 0.75rem; padding: 4px 10px; border-radius: 12px; text-transform: uppercase; }
-        .p-titulo { font-family: 'Cinzel', serif; font-size: 1.8rem; margin: 15px 0 5px 0; text-transform: uppercase; }
-        .p-precio { font-size: 1.6rem; font-weight: bold; margin: 15px 0; }
-        
-        .btn-add { width: 100%; background: #000; color: #fff; padding: 14px; border: none; border-radius: 25px; font-weight: bold; cursor: pointer; margin-bottom: 10px; }
-        .btn-wa { width: 100%; background: #25d366; color: #fff; padding: 14px; border: none; border-radius: 25px; font-weight: bold; text-decoration: none; display: block; text-align: center; }
-        
-        .grid-garantias { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
-        .item-garantia { background: #f9f9f9; padding: 10px; text-align: center; font-size: 0.8rem; border-radius: 8px; border: 1px solid #eee; }
-    </style>
-</head>
-<body style="background:#f8f9fa;">
 
-<div style="max-width:1100px; margin:20px auto; padding:0 20px; font-size:0.85rem; color:#666;">
-    <a href="catalogo.php" style="color:#666; text-decoration:none;">Inicio</a> / 
-    <a href="catalogo.php" style="color:#666; text-decoration:none;">Catálogo</a> / 
-    <b><?= htmlspecialchars($p['nombre']) ?></b>
-</div>
+<div class="producto-detalle-container" style="max-width: 1100px; margin: 40px auto; padding: 0 20px;">
+    
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+        <span class="categoria-badge" style="background: #111; border: 1px solid #c5a059; color: #c5a059; padding: 6px 16px; border-radius: 20px; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px;">
+            <?= htmlspecialchars($categoria) ?>
+        </span>
 
-<div class="p-container">
-    <!-- GALERÍA -->
-    <div class="p-galeria">
-        <div>
-            <img src="<?= htmlspecialchars($p['imagen'] ?? 'img/placeholder.jpg') ?>" class="p-thumb">
-        </div>
-        <div style="flex:1;">
-            <img src="<?= htmlspecialchars($p['imagen'] ?? 'img/placeholder.jpg') ?>" class="p-img-main">
-        </div>
+        <a href="javascript:history.back()" class="btn-volver" style="color: #fff; text-decoration: none; border: 1px solid rgba(255,255,255,0.2); padding: 8px 18px; border-radius: 20px; font-size: 0.9rem;">
+            ← Volver
+        </a>
     </div>
 
-    <!-- DETALLE DEL PRODUCTO -->
-    <div class="p-info-box">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span class="p-badge"><?= htmlspecialchars($p['categoria'] ?? 'PERFUME') ?></span>
-            <a href="catalogo.php" style="text-decoration:none; color:#666; font-size:0.85rem;">← Volver</a>
+    <div class="producto-detalle-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start;">
+        
+        <!-- LADO IZQUIERDO: Imagen del Producto -->
+        <div class="producto-galeria" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(197, 160, 89, 0.2); padding: 30px; border-radius: 12px; text-align: center;">
+            <?php if (!empty($imagen) && file_exists(__DIR__ . '/' . $imagen)): ?>
+                <img src="<?= htmlspecialchars($imagen) ?>" alt="<?= htmlspecialchars($nombre) ?>" style="max-width: 100%; max-height: 420px; object-fit: contain; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.8));">
+            <?php else: ?>
+                <!-- Frasco ilustrado si la foto física no existe en la carpeta assets -->
+                <div class="frasco <?= htmlspecialchars($clase) ?>" style="margin: 40px auto;">
+                    <div class="frasco__cap"></div>
+                    <div class="frasco__neck"></div>
+                    <div class="frasco__body"><span>S7</span></div>
+                </div>
+            <?php endif; ?>
         </div>
 
-        <div style="font-size:0.85rem; color:#777; margin-top:10px; text-transform:uppercase;"><?= htmlspecialchars($p['marca'] ?? 'S7even') ?></div>
-        <h1 class="p-titulo"><?= htmlspecialchars($p['nombre']) ?></h1>
-
-        <div style="margin-top:5px;">
-            <span style="background:#eef9f1; color:#1e7e34; padding:3px 8px; border-radius:10px; font-size:0.75rem;">Disponible</span>
-            <span style="background:#f4f4f4; padding:3px 8px; border-radius:10px; font-size:0.75rem; margin-left:5px;"><?= htmlspecialchars($p['genero'] ?? 'Unisex') ?></span>
-        </div>
-
-        <div class="p-precio">S/ <?= number_format($p['precio'], 2) ?></div>
-
-        <div style="margin: 20px 0;">
-            <strong style="font-size:0.9rem;">Descripción del producto</strong>
-            <p style="font-size:0.85rem; color:#555; line-height:1.5; margin-top:5px;">
-                <?= htmlspecialchars($p['descripcion'] ?? 'Una fragancia exclusiva y moderna que destaca por su elegancia y fijación duradera.') ?>
+        <!-- LADO DERECHO: Información y Compra -->
+        <div class="producto-info">
+            <p class="marca" style="color: #c5a059; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 5px; font-size: 0.9rem;">
+                <?= htmlspecialchars($marca) ?>
             </p>
-        </div>
+            <h1 style="font-size: 2.2rem; margin: 0 0 15px 0; font-family: 'Cinzel', serif; color: #fff;">
+                <?= htmlspecialchars($nombre) ?>
+            </h1>
 
-        <!-- ACCIONES COMPRA -->
-        <form method="POST" action="carrito.php?accion=agregar">
-            <input type="hidden" name="producto_id" value="<?= $p['id'] ?>">
-            <div style="margin-bottom:15px; display:flex; align-items:center; gap:10px;">
-                <label style="font-size:0.85rem; font-weight:bold;">Cantidad:</label>
-                <input type="number" name="cantidad" value="1" min="1" style="width:60px; padding:6px; text-align:center; border:1px solid #ccc; border-radius:6px;">
+            <div class="precio-box" style="margin-bottom: 20px;">
+                <span style="font-size: 1.8rem; font-weight: bold; color: #c5a059;">
+                    <?= s7_formato_precio($precio) ?>
+                </span>
             </div>
-            
-            <button type="submit" class="btn-add">Añadir al carrito</button>
-        </form>
 
-        <a href="<?= $link_wa ?>" target="_blank" class="btn-wa">Comprar por WhatsApp</a>
+            <div class="descripcion" style="margin-bottom: 25px; border-top: 1px solid rgba(255,255,255,0.1); border-bottom: 1px solid rgba(255,255,255,0.1); padding: 15px 0;">
+                <h4 style="color: #c5a059; margin-bottom: 8px;">📖 Descripción del aroma</h4>
+                <p style="color: #ccc; line-height: 1.6; font-size: 0.95rem;">
+                    <?= htmlspecialchars($notas) ?>
+                </p>
+            </div>
 
-        <!-- GARANTÍAS -->
-        <div class="grid-garantias">
-            <div class="item-garantia">✓ Producto original</div>
-            <div class="item-garantia">✓ Pago seguro</div>
-            <div class="item-garantia">✓ Envíos a todo el Perú</div>
-            <div class="item-garantia">✓ Atención por WhatsApp</div>
+            <div class="selector-cantidad-box" style="background: rgba(0,0,0,0.3); padding: 20px; border-radius: 8px; margin-bottom: 25px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <label style="color: #fff;">Cantidad</label>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <button type="button" onclick="decrementar()" style="background: #222; border: 1px solid #444; color: #fff; width: 32px; height: 32px; border-radius: 4px; cursor: pointer;">-</button>
+                        <input type="number" id="cantidadInput" value="1" min="1" readonly style="width: 45px; text-align: center; background: transparent; border: none; color: #fff; font-weight: bold;">
+                        <button type="button" onclick="incrementar()" style="background: #222; border: 1px solid #444; color: #fff; width: 32px; height: 32px; border-radius: 4px; cursor: pointer;">+</button>
+                    </div>
+                </div>
+                
+                <div style="display: flex; justify-content: space-between; font-size: 1.1rem; color: #fff; border-top: 1px solid #333; padding-top: 10px;">
+                    <span>Total estimado:</span>
+                    <strong id="totalEstimado" style="color: #c5a059;"><?= s7_formato_precio($precio) ?></strong>
+                </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <form action="carrito-agregar.php" method="post">
+                    <input type="hidden" name="id" value="<?= htmlspecialchars($producto['id'] ?? '') ?>">
+                    <input type="hidden" id="formCantidad" name="cantidad" value="1">
+                    <button type="submit" class="btn btn--gold" style="width: 100%; text-align: center; padding: 14px; background: linear-gradient(135deg, #c5a059 0%, #9e7d3b 100%); color: #000; font-weight: bold; border: none; border-radius: 4px; cursor: pointer;">Añadir al carrito</button>
+                </form>
+
+                <a id="btnWsp" href="https://api.whatsapp.com/send?phone=51982424158&text=<?= urlencode('Hola, deseo comprar 1 unidad(es) de ' . $nombre) ?>" target="_blank" class="btn btn--outline" style="text-align: center; padding: 14px; border: 1px solid #25D366; color: #25D366; border-radius: 4px; text-decoration: none; font-weight: bold;">
+                    Comprar por WhatsApp
+                </a>
+            </div>
+
         </div>
     </div>
 </div>
 
-</body>
-</html>
+<script>
+const precioUnitario = <?= $precio ?>;
+
+function incrementar() {
+    let input = document.getElementById('cantidadInput');
+    let val = parseInt(input.value) + 1;
+    input.value = val;
+    actualizarTotal(val);
+}
+
+function decrementar() {
+    let input = document.getElementById('cantidadInput');
+    if (parseInt(input.value) > 1) {
+        let val = parseInt(input.value) - 1;
+        input.value = val;
+        actualizarTotal(val);
+    }
+}
+
+function actualizarTotal(cant) {
+    document.getElementById('formCantidad').value = cant;
+    let total = cant * precioUnitario;
+    document.getElementById('totalEstimado').innerText = 'S/ ' + total.toFixed(2);
+    
+    let mensajeWA = `Hola, deseo comprar ${cant} unidad(es) de <?= rawurlencode($nombre) ?>`;
+    document.getElementById('btnWsp').href = `https://api.whatsapp.com/send?phone=51982424158&text=${mensajeWA}`;
+}
+</script>
+
+<?php require __DIR__ . '/includes/footer.php'; ?>
