@@ -15,7 +15,7 @@ function s7_catalogo(): array {
             'numero'    => 'No. I',
             'nombre'    => 'HAWAS LAVA GOLD',
             'notas'     => 'Oud · Cuero · Pimienta negra',
-            'precio'    => 349.00,
+            'precio'    => 175.00,
             'clase'     => 'frasco--onix',
             'stock'     => 25,
             'categoria' => 'arabes',
