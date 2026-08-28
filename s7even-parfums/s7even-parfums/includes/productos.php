@@ -11,9 +11,9 @@
 function s7_catalogo(): array {
     return [
         [
-            'id'        => 'onix-nocturno',
+            'id'        => 'Hawas-lavagold',
             'numero'    => 'No. I',
-            'nombre'    => 'ÓNIX NOCTURNO',
+            'nombre'    => 'HAWAS LAVA GOLD',
             'notas'     => 'Oud · Cuero · Pimienta negra',
             'precio'    => 349.00,
             'clase'     => 'frasco--onix',
