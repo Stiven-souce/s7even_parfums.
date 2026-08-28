@@ -138,19 +138,31 @@ require __DIR__ . '/includes/header.php';
       <?php foreach (s7_catalogo() as $p): ?>
         <article class="frasco-card slider-item">
           <div class="frasco-card__stage">
-            <?php if (!empty($p['imagen'])): ?>
-              <img src="<?= htmlspecialchars($p['imagen']) ?>" alt="<?= htmlspecialchars($p['nombre']) ?>" class="prod-img-real">
-            <?php else: ?>
-              <div class="frasco <?= htmlspecialchars($p['clase'] ?? 'gold') ?>">
-                <div class="frasco__cap"></div>
-                <div class="frasco__neck"></div>
-                <div class="frasco__body"><span>S7</span></div>
-              </div>
-            <?php endif; ?>
+            <!-- Enlace en la imagen -->
+            <a href="producto.php?id=<?= urlencode($p['id']) ?>">
+              <?php if (!empty($p['imagen'])): ?>
+                <img src="<?= htmlspecialchars($p['imagen']) ?>" alt="<?= htmlspecialchars($p['nombre']) ?>" class="prod-img-real">
+              <?php else: ?>
+                <div class="frasco <?= htmlspecialchars($p['clase'] ?? 'gold') ?>">
+                  <div class="frasco__cap"></div>
+                  <div class="frasco__neck"></div>
+                  <div class="frasco__body"><span>S7</span></div>
+                </div>
+              <?php endif; ?>
+            </a>
           </div>
+
           <span class="frasco-card__num"><?= htmlspecialchars($p['numero'] ?? 'TOP') ?></span>
-          <h3><?= htmlspecialchars($p['nombre']) ?></h3>
+          
+          <!-- Enlace en el título -->
+          <h3>
+            <a href="producto.php?id=<?= urlencode($p['id']) ?>" style="color: inherit; text-decoration: none;">
+              <?= htmlspecialchars($p['nombre']) ?>
+            </a>
+          </h3>
+
           <p class="frasco-card__notes"><?= htmlspecialchars($p['notas'] ?? $p['descripcion'] ?? '') ?></p>
+          
           <div class="frasco-card__foot">
             <span class="price"><?= s7_formato_precio($p['precio']) ?></span>
             <form action="carrito-agregar.php" method="post">
