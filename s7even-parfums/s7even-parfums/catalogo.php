@@ -332,6 +332,7 @@ body {
     border-radius: 12px;
     letter-spacing: 1px;
     text-transform: uppercase;
+    z-index: 10; /* Ajustado para estar siempre por encima de la imagen */
 }
 
 .prod-img-box {
@@ -348,6 +349,7 @@ body {
     object-fit: contain;
     filter: drop-shadow(0 5px 15px rgba(0,0,0,0.6));
     transition: transform 0.3s ease;
+    mix-blend-mode: multiply; /* Fusiona el fondo blanco de la foto con el tema oscuro */
 }
 
 .prod-card:hover .prod-img {
