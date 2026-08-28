@@ -3,7 +3,11 @@
  * Catálogo Elegante — S7even Parfums
  */
 require_once __DIR__ . '/includes/config.php';
-require_once __DIR__ . '/includes/db.php';
+require_once __DIR__ . '/includes/productos.php';
+
+if (file_exists(__DIR__ . '/includes/db.php')) {
+    require_once __DIR__ . '/includes/db.php';
+}
 
 $page_title = "Catálogo Exclusivo — S7even Parfums";
 
@@ -14,39 +18,84 @@ $marca     = $_GET['marca'] ?? '';
 $busqueda  = $_GET['q'] ?? '';
 $orden     = $_GET['orden'] ?? 'recientes';
 
-// Construcción de la Consulta para Supabase
-$query = 'productos?select=*';
+// 1. Cargar catálogo local como base (incluye Hawas Lava Gold)
+$productos_locales = s7_catalogo();
+$productos_db = [];
 
-if (!empty($categoria) && strtolower($categoria) !== 'todos') {
-    // Si la categoría es Árabes, usamos comodín para evitar fallos por la tilde en Supabase
-    if (in_array(strtolower($categoria), ['árabes', 'arabes'])) {
-        $query .= '&categoria=ilike.*rabes*';
-    } else {
-        $query .= '&categoria=ilike.' . urlencode($categoria);
+// 2. Intentar cargar desde Supabase si la función existe
+if (function_exists('supabase_request')) {
+    $query = 'productos?select=*';
+
+    if (!empty($categoria) && strtolower($categoria) !== 'todos') {
+        if (in_array(strtolower($categoria), ['árabes', 'arabes'])) {
+            $query .= '&categoria=ilike.*rabes*';
+        } else {
+            $query .= '&categoria=ilike.' . urlencode($categoria);
+        }
+    }
+
+    if (!empty($genero)) {
+        $query .= '&genero=ilike.' . urlencode($genero);
+    }
+
+    if (!empty($marca)) {
+        $query .= '&marca=eq.' . urlencode($marca);
+    }
+
+    if (!empty($busqueda)) {
+        $query .= '&nombre=ilike.*' . urlencode($busqueda) . '*';
+    }
+
+    $res_db = supabase_request($query, 'GET');
+    if (is_array($res_db)) {
+        $productos_db = $res_db;
     }
 }
 
-if (!empty($genero)) {
-    $query .= '&genero=ilike.' . urlencode($genero);
+// 3. Fusionar evitando duplicados por 'id'
+$todos_map = [];
+foreach ($productos_locales as $p) {
+    $todos_map[$p['id']] = $p;
 }
-
-if (!empty($marca)) {
-    $query .= '&marca=eq.' . urlencode($marca);
+foreach ($productos_db as $p) {
+    if (isset($p['id'])) {
+        $todos_map[$p['id']] = array_merge($todos_map[$p['id']] ?? [], $p);
+    }
 }
+$productos = array_values($todos_map);
 
-if (!empty($busqueda)) {
-    $query .= '&nombre=ilike.*' . urlencode($busqueda) . '*';
-}
+// 4. Aplicar filtrado local (para asegurar que Hawas respete los selectores de la página)
+$productos = array_filter($productos, function($p) use ($categoria, $genero, $marca, $busqueda) {
+    if (!empty($categoria) && strtolower($categoria) !== 'todos') {
+        $cat_p = strtolower($p['categoria'] ?? '');
+        $cat_f = strtolower($categoria);
+        if ($cat_f === 'arabes' || $cat_f === 'árabes') {
+            if (strpos($cat_p, 'arab') === false && strpos($cat_p, 'árab') === false) return false;
+        } elseif ($cat_p !== $cat_f) {
+            return false;
+        }
+    }
+    if (!empty($genero) && strtolower($p['genero'] ?? '') !== strtolower($genero)) {
+        return false;
+    }
+    if (!empty($marca) && strtolower($p['marca'] ?? '') !== strtolower($marca)) {
+        return false;
+    }
+    if (!empty($busqueda)) {
+        $term = strtolower($busqueda);
+        $in_nombre = strpos(strtolower($p['nombre'] ?? ''), $term) !== false;
+        $in_notas = strpos(strtolower($p['notas'] ?? ''), $term) !== false;
+        if (!$in_nombre && !$in_notas) return false;
+    }
+    return true;
+});
 
-if ($orden === 'precio_asc') {
-    $query .= '&order=precio.asc';
-} elseif ($orden === 'precio_desc') {
-    $query .= '&order=precio.desc';
-} else {
-    $query .= '&order=id.desc';
-}
-
-$productos = supabase_request($query, 'GET') ?? [];
+// 5. Aplicar ordenamiento
+usort($productos, function($a, $b) use ($orden) {
+    if ($orden === 'precio_asc') return ($a['precio'] ?? 0) <=> ($b['precio'] ?? 0);
+    if ($orden === 'precio_desc') return ($b['precio'] ?? 0) <=> ($a['precio'] ?? 0);
+    return 0; // Orden por defecto
+});
 
 // Cargar Header elegante
 require_once __DIR__ . '/includes/header.php';
@@ -401,15 +450,23 @@ body {
         <div class="cat-grid">
             <?php if (!empty($productos)): ?>
                 <?php foreach ($productos as $prod): ?>
-                    <a href="producto.php?id=<?= $prod['id'] ?>" class="prod-card">
+                    <a href="producto.php?id=<?= urlencode($prod['id']) ?>" class="prod-card">
                         <span class="prod-tag"><?= htmlspecialchars($prod['categoria'] ?? 'Exclusivo') ?></span>
                         <div class="prod-img-box">
-                            <img src="<?= htmlspecialchars($prod['imagen'] ?? 'assets/logo.png') ?>" class="prod-img" alt="<?= htmlspecialchars($prod['nombre']) ?>">
+                            <?php if (!empty($prod['imagen']) && file_exists(__DIR__ . '/' . $prod['imagen'])): ?>
+                                <img src="<?= htmlspecialchars($prod['imagen']) ?>" class="prod-img" alt="<?= htmlspecialchars($prod['nombre']) ?>">
+                            <?php else: ?>
+                                <div class="frasco <?= htmlspecialchars($prod['clase'] ?? 'frasco--dorado') ?>">
+                                    <div class="frasco__cap"></div>
+                                    <div class="frasco__neck"></div>
+                                    <div class="frasco__body"><span>S7</span></div>
+                                </div>
+                            <?php endif; ?>
                         </div>
                         <div>
-                            <div class="prod-brand"><?= htmlspecialchars($prod['marca'] ?? 'S7even Parfums') ?></div>
+                            <div class="prod-brand"><?= htmlspecialchars($prod['marca'] ?? 'S7EVEN') ?></div>
                             <h2 class="prod-title"><?= htmlspecialchars($prod['nombre']) ?></h2>
-                            <div class="prod-price">S/ <?= number_format($prod['precio'], 2) ?></div>
+                            <div class="prod-price">S/ <?= number_format((float)($prod['precio'] ?? 0), 2) ?></div>
                         </div>
                     </a>
                 <?php endforeach; ?>
