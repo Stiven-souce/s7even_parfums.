@@ -39,13 +39,14 @@ if (!$producto) {
 }
 
 // Sanitización de variables para prevenir Warnings y PHP 8 Deprecations
-$nombre    = $producto['nombre'] ?? 'Producto S7even';
-$categoria = $producto['categoria'] ?? 'Árabes';
-$marca     = $producto['marca'] ?? 'S7EVEN';
-$precio    = (float)($producto['precio'] ?? 0);
-$notas     = $producto['notas'] ?? $producto['descripcion'] ?? 'Fragancia exclusiva de alta duración con proyección elegante y refinada.';
-$imagen    = $producto['imagen'] ?? '';
-$clase     = $producto['clase'] ?? 'frasco--dorado';
+$nombre      = $producto['nombre'] ?? 'Producto S7even';
+$categoria   = $producto['categoria'] ?? 'Árabes';
+$marca       = $producto['marca'] ?? 'S7EVEN';
+$precio      = (float)($producto['precio'] ?? 0);
+$descripcion = $producto['descripcion'] ?? 'Fragancia exclusiva de alta duración con proyección elegante y refinada.';
+$notas       = $producto['notas'] ?? '';
+$imagen      = $producto['imagen'] ?? '';
+$clase       = $producto['clase'] ?? 'frasco--dorado';
 
 $page_title = htmlspecialchars($nombre) . " — S7even Parfums";
 require __DIR__ . '/includes/header.php';
@@ -94,11 +95,21 @@ require __DIR__ . '/includes/header.php';
                 </span>
             </div>
 
+            <!-- Bloque de Descripción y Notas -->
             <div class="descripcion" style="margin-bottom: 25px; border-top: 1px solid rgba(255,255,255,0.1); border-bottom: 1px solid rgba(255,255,255,0.1); padding: 15px 0;">
                 <h4 style="color: #c5a059; margin-bottom: 8px;">📖 Descripción del aroma</h4>
-                <p style="color: #ccc; line-height: 1.6; font-size: 0.95rem;">
-                    <?= htmlspecialchars($notas) ?>
+                
+                <!-- Imprime el texto descriptivo -->
+                <p style="color: #ccc; line-height: 1.6; font-size: 0.95rem; margin-bottom: 10px;">
+                    <?= htmlspecialchars($descripcion) ?>
                 </p>
+
+                <!-- Imprime las notas olfativas -->
+                <?php if (!empty($notas)): ?>
+                    <p style="color: #c5a059; font-size: 0.85rem;">
+                        <strong>Notas:</strong> <?= htmlspecialchars($notas) ?>
+                    </p>
+                <?php endif; ?>
             </div>
 
             <div class="selector-cantidad-box" style="background: rgba(0,0,0,0.3); padding: 20px; border-radius: 8px; margin-bottom: 25px;">
