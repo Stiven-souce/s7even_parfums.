@@ -62,6 +62,19 @@ function s7_catalogo(): array {
             'marca'       => 'HAWAS',
             'imagen'      => 'assets/hawas_kobra.png',
         ],
+        [
+            'id'          => 'Hawas-black',
+            'numero'      => 'No. VIII',
+            'nombre'      => 'HAWAS BLACK',
+            'notas'       => 'Piña · Bergamota · Pachulí · Liquen de roble',
+            'descripcion' => 'Hawas Black es la interpretación más oscura, intensa y sofisticada de la colección. Inicia con un estallido potente de piña, bergamota y pomelo que da paso a un corazón ahumado de jazmín y pachulí. Su base de musgo de roble, ámbar y maderas oscuras crea una firma olfativa imponente, moderna y con una fijación extraordinaria.',
+            'precio'      => 175.00,
+            'clase'       => 'frasco--onix',
+            'stock'       => 25,
+            'categoria'   => 'arabes',
+            'marca'       => 'HAWAS',
+            'imagen'      => 'assets/hawas_black.png',
+        ],
     ];
 }
 
