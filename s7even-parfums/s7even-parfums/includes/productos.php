@@ -58,6 +58,19 @@ function s7_catalogo(): array {
             'marca'       => 'S7EVEN',
             'imagen'      => '',
         ],
+        [
+            'id'          => 'Hawas-kobra',
+            'numero'      => 'No. V',
+            'nombre'      => 'HAWAS KOBRA',
+            'notas'       => 'Menta · Lavanda · Notas especiadas',
+            'descripcion' => 'Hawas Kobra combina una frescura intensa y magnética con toques especiados y amaderados. Una fragancia audaz diseñada para dejar una presencia dominante e inconfundible.',
+            'precio'      => 175.00,
+            'clase'       => 'frasco--onix',
+            'stock'       => 25,
+            'categoria'   => 'arabes',
+            'marca'       => 'HAWAS',
+            'imagen'      => 'assets/hawas_kobra.png',
+        ],
     ];
 }
 
