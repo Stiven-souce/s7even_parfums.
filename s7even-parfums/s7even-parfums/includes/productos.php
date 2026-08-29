@@ -27,7 +27,7 @@ function s7_catalogo(): array {
             'numero'      => 'No. VI',
             'nombre'      => 'HAWAS ICE',
             'notas'       => 'Manzana helada · Bergamota · Cardamomo',
-            'descripcion' => 'Hawas Ice ofrece una explosión gélida y revitalizante de notas cítricas y afrutadas sobre un fondo cristalino y amaderado. La interpretación más fresca y moderna de la línea Hawas.',
+            'descripcion' => 'Hawas Ice es una ráfaga de frescura extrema y vitalidad. Inicia con un acorde helado de manzana, bergamota y menta que despierta los sentidos al instante. En su evolución, las notas florales y especiadas suaves aportan elegancia, cerrando con un fondo cálido de musgo, ámbar y madera que asegura una presencia limpia, moderna y altamente adictiva.',
             'precio'      => 175.00,
             'clase'       => 'frasco--onix',
             'stock'       => 25,
