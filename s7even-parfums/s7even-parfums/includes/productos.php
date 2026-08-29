@@ -49,6 +49,20 @@ function s7_catalogo(): array {
             'marca'       => 'HAWAS',
             'imagen'      => 'assets/hawas_black.png',
         ],
+
+        [
+            'id'          => 'Hawas-tropical',
+            'numero'      => 'No. IX',
+            'nombre'      => 'HAWAS TROPICAL',
+            'notas'       => 'Mango · Coco · Fruta de la pasión · Ámbar cálido',
+            'descripcion' => 'Hawas Tropical es una explosión exótica y vibrante de frescura. Abre con refrescante agua de coco, hojas de higuera y un toque picante de jengibre, dando paso a un corazón veraniego de coco, higo y menta fresca. Su fondo amaderado y cremoso de sándalo, haba tonka y almizcle aporta un secado sofisticado, masculino y muy seductor.',
+            'precio'      => 175.00,
+            'clase'       => 'frasco--onix',
+            'stock'       => 25,
+            'categoria'   => 'arabes',
+            'marca'       => 'HAWAS',
+            'imagen'      => 'assets/hawas_tropical.png',
+        ],
         
         [
             'id'          => 'Hawas-kobra',
