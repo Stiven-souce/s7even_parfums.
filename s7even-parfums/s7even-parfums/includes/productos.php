@@ -6,6 +6,9 @@ require_once __DIR__ . '/config.php';
  */
 function s7_catalogo(): array {
     return [
+        /**
+ * PERFUMES DE LA MARCA HAWAS.
+ */
         [
             'id'          => 'Hawas-lavagold',
             'numero'      => 'No. I',
