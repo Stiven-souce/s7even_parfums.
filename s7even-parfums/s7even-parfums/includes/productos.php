@@ -33,7 +33,7 @@ function s7_catalogo(): array {
             'stock'       => 25,
             'categoria'   => 'arabes',
             'marca'       => 'HAWAS',
-            'imagen'      => 'assets/hawaas_ice.png',
+            'imagen'      => 'assets/hawas_ice.png',
         ],
         [
             'id'          => 'selva-esmeralda',
