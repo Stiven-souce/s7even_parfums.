@@ -63,7 +63,7 @@ function s7_catalogo(): array {
             'numero'      => 'No. V',
             'nombre'      => 'HAWAS KOBRA',
             'notas'       => 'Menta · Lavanda · Notas especiadas',
-            'descripcion' => 'Hawas Kobra combina una frescura intensa y magnética con toques especiados y amaderados. Una fragancia audaz diseñada para dejar una presencia dominante e inconfundible.',
+            'descripcion' => 'Hawas Kobra refleja un carácter oscuro, misterioso y magnético. Inicia con un estallido fresco de especias vibrantes que se entrelazan rápidamente con un corazón amaderado y herbal. Su fondo denso de cuero, incienso y ámbar proyecta una masculinidad sofisticada, imponente y llena de peligro seductor.',
             'precio'      => 175.00,
             'clase'       => 'frasco--onix',
             'stock'       => 25,
