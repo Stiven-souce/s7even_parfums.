@@ -9,19 +9,7 @@ function s7_catalogo(): array {
         /**
  * PERFUMES DE LA MARCA HAWAS.
  */
-        [
-            'id'          => 'Hawas-lavagold',
-            'numero'      => 'No. I',
-            'nombre'      => 'HAWAS LAVA GOLD',
-            'notas'       => 'Oud · Cuero · Pimienta negra',
-            'descripcion' => 'Hawas Lava Gold es la encarnación del lujo misterioso y la fuerza masculina. Inicia con un contraste vibrante de piña y manzana sobre un corazón dominante de cuero y especias oscuras. Su fondo de ámbar dulce y madura madera de oud deja una huella dorada, cálida e inolvidable a tu paso.',
-            'precio'      => 175.00,
-            'clase'       => 'frasco--onix',
-            'stock'       => 25,
-            'categoria'   => 'arabes',
-            'marca'       => 'HAWAS',
-            'imagen'      => 'assets/hawas_lavagold.png',
-        ],
+
        [
             'id'          => 'Hawas-ice',
             'numero'      => 'No. VI',
@@ -48,18 +36,18 @@ function s7_catalogo(): array {
             'marca'       => 'HAWAS',
             'imagen'      => 'assets/hawas_for_him.png',
         ],
-        [
-            'id'          => 'pulso-carmin',
-            'numero'      => 'No. IV',
-            'nombre'      => 'PULSO CARMÍN',
-            'notas'       => 'Rosa turca · Canela · Sándalo',
-            'descripcion' => 'Una composición seductora y apasionada que fusiona la riqueza floral de la rosa con especias cálidas y un fondo de sándalo cremoso.',
-            'precio'      => 359.00,
-            'clase'       => 'frasco--carmin',
+               [
+            'id'          => 'Hawas-lavagold',
+            'numero'      => 'No. I',
+            'nombre'      => 'HAWAS LAVA GOLD',
+            'notas'       => 'Oud · Cuero · Pimienta negra',
+            'descripcion' => 'Hawas Lava Gold es la encarnación del lujo misterioso y la fuerza masculina. Inicia con un contraste vibrante de piña y manzana sobre un corazón dominante de cuero y especias oscuras. Su fondo de ámbar dulce y madura madera de oud deja una huella dorada, cálida e inolvidable a tu paso.',
+            'precio'      => 175.00,
+            'clase'       => 'frasco--onix',
             'stock'       => 25,
-            'categoria'   => 'disenador',
-            'marca'       => 'S7EVEN',
-            'imagen'      => '',
+            'categoria'   => 'arabes',
+            'marca'       => 'HAWAS',
+            'imagen'      => 'assets/hawas_lavagold.png',
         ],
         [
             'id'          => 'Hawas-kobra',
