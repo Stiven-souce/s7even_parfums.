@@ -77,6 +77,20 @@ function s7_catalogo(): array {
             'marca'       => 'HAWAS',
             'imagen'      => 'assets/hawas_kobra.png',
         ],
+
+        [
+            'id'          => 'Hawas-fire',
+            'numero'      => 'No. X',
+            'nombre'      => 'HAWAS FIRE',
+            'notas'       => 'Pimienta roja · Canela · Ámbar incandescente · Madera quemada',
+            'descripcion' => 'Hawas Fire es una fragancia cálida, intensa y seductora. Abre con una potente combinación de especias picantes y notas cítricas que encienden los sentidos, dando paso a un corazón amaderado y resinoso. Su fondo rico en ámbar, vainilla y notas ahumadas crea una estela envolvente, profunda y de altísima duración, ideal para destacar.',
+            'precio'      => 175.00,
+            'clase'       => 'frasco--onix',
+            'stock'       => 25,
+            'categoria'   => 'arabes',
+            'marca'       => 'HAWAS',
+            'imagen'      => 'assets/hawas_fire.png',
+        ],
                [
             'id'          => 'Hawas-lavagold',
             'numero'      => 'No. I',
