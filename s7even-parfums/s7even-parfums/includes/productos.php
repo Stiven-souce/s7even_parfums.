@@ -36,19 +36,20 @@ function s7_catalogo(): array {
             'marca'       => 'HAWAS',
             'imagen'      => 'assets/hawas_for_him.png',
         ],
-               [
-            'id'          => 'Hawas-lavagold',
-            'numero'      => 'No. I',
-            'nombre'      => 'HAWAS LAVA GOLD',
-            'notas'       => 'Oud · Cuero · Pimienta negra',
-            'descripcion' => 'Hawas Lava Gold es la encarnación del lujo misterioso y la fuerza masculina. Inicia con un contraste vibrante de piña y manzana sobre un corazón dominante de cuero y especias oscuras. Su fondo de ámbar dulce y madura madera de oud deja una huella dorada, cálida e inolvidable a tu paso.',
+                [
+            'id'          => 'Hawas-black',
+            'numero'      => 'No. VIII',
+            'nombre'      => 'HAWAS BLACK',
+            'notas'       => 'Piña · Bergamota · Pachulí · Liquen de roble',
+            'descripcion' => 'Hawas Black es la interpretación más oscura, intensa y sofisticada de la colección. Inicia con un estallido potente de piña, bergamota y pomelo que da paso a un corazón ahumado de jazmín y pachulí. Su base de musgo de roble, ámbar y maderas oscuras crea una firma olfativa imponente, moderna y con una fijación extraordinaria.',
             'precio'      => 175.00,
             'clase'       => 'frasco--onix',
             'stock'       => 25,
             'categoria'   => 'arabes',
             'marca'       => 'HAWAS',
-            'imagen'      => 'assets/hawas_lavagold.png',
+            'imagen'      => 'assets/hawas_black.png',
         ],
+        
         [
             'id'          => 'Hawas-kobra',
             'numero'      => 'No. V',
@@ -62,19 +63,21 @@ function s7_catalogo(): array {
             'marca'       => 'HAWAS',
             'imagen'      => 'assets/hawas_kobra.png',
         ],
-        [
-            'id'          => 'Hawas-black',
-            'numero'      => 'No. VIII',
-            'nombre'      => 'HAWAS BLACK',
-            'notas'       => 'Piña · Bergamota · Pachulí · Liquen de roble',
-            'descripcion' => 'Hawas Black es la interpretación más oscura, intensa y sofisticada de la colección. Inicia con un estallido potente de piña, bergamota y pomelo que da paso a un corazón ahumado de jazmín y pachulí. Su base de musgo de roble, ámbar y maderas oscuras crea una firma olfativa imponente, moderna y con una fijación extraordinaria.',
+               [
+            'id'          => 'Hawas-lavagold',
+            'numero'      => 'No. I',
+            'nombre'      => 'HAWAS LAVA GOLD',
+            'notas'       => 'Oud · Cuero · Pimienta negra',
+            'descripcion' => 'Hawas Lava Gold es la encarnación del lujo misterioso y la fuerza masculina. Inicia con un contraste vibrante de piña y manzana sobre un corazón dominante de cuero y especias oscuras. Su fondo de ámbar dulce y madura madera de oud deja una huella dorada, cálida e inolvidable a tu paso.',
             'precio'      => 175.00,
             'clase'       => 'frasco--onix',
             'stock'       => 25,
             'categoria'   => 'arabes',
             'marca'       => 'HAWAS',
-            'imagen'      => 'assets/hawas_black.png',
+            'imagen'      => 'assets/hawas_lavagold.png',
         ],
+        
+
     ];
 }
 
