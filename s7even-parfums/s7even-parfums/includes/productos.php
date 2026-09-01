@@ -121,6 +121,20 @@ function s7_catalogo(): array {
             'imagen'      => 'assets/hawas_malibu.png',
         ],
 
+        [
+            'id'          => 'Hawas-verde',
+            'numero'      => 'No. XIII',
+            'nombre'      => 'HAWAS VERDE',
+            'notas'       => 'Lima verde · Menta · Manzana verde · Romero · Pachulí',
+            'descripcion' => 'Hawas Verde es una expresión botánica y revitalizante de la saga. Abre con una explosión de notas cítricas brillantes, bergamota y hojas verdes crujientes que transmiten una sensación de frescura inmediata. Su corazón herbal y aromático se asienta sobre una base sólida de maderas claras, vetiver y ámbar suave, logrando un aroma limpio, enérgico y altamente sofisticado.',
+            'precio'      => 185.00,
+            'clase'       => 'frasco--onix',
+            'stock'       => 25,
+            'categoria'   => 'arabes',
+            'marca'       => 'RASASI',
+            'imagen'      => 'assets/hawas_verde.png',
+        ],
+
          [
             'id'          => 'Hawas-lavagold',
             'numero'      => 'No. I',
