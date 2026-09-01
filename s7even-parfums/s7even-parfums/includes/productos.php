@@ -6,6 +6,7 @@ require_once __DIR__ . '/config.php';
  */
 function s7_catalogo(): array {
     return [
+        
         /**
  * PERFUMES DE LA MARCA HAWAS.
  */
@@ -20,7 +21,7 @@ function s7_catalogo(): array {
             'clase'       => 'frasco--onix',
             'stock'       => 25,
             'categoria'   => 'arabes',
-            'marca'       => 'HAWAS',
+            'marca'       => 'RASASI',
             'imagen'      => 'assets/hawas_ice.png',
         ],
        [
@@ -33,7 +34,7 @@ function s7_catalogo(): array {
             'clase'       => 'frasco--onix',
             'stock'       => 25,
             'categoria'   => 'arabes',
-            'marca'       => 'HAWAS',
+            'marca'       => 'RASASI',
             'imagen'      => 'assets/hawas_for_him.png',
         ],
                 [
@@ -46,7 +47,7 @@ function s7_catalogo(): array {
             'clase'       => 'frasco--onix',
             'stock'       => 25,
             'categoria'   => 'arabes',
-            'marca'       => 'HAWAS',
+            'marca'       => 'RASASI',
             'imagen'      => 'assets/hawas_black.png',
         ],
 
@@ -60,7 +61,7 @@ function s7_catalogo(): array {
             'clase'       => 'frasco--onix',
             'stock'       => 25,
             'categoria'   => 'arabes',
-            'marca'       => 'HAWAS',
+            'marca'       => 'RASASI',
             'imagen'      => 'assets/hawas_tropical.png',
         ],
         
@@ -74,7 +75,7 @@ function s7_catalogo(): array {
             'clase'       => 'frasco--onix',
             'stock'       => 25,
             'categoria'   => 'arabes',
-            'marca'       => 'HAWAS',
+            'marca'       => 'RASASI',
             'imagen'      => 'assets/hawas_kobra.png',
         ],
 
@@ -88,7 +89,7 @@ function s7_catalogo(): array {
             'clase'       => 'frasco--onix',
             'stock'       => 25,
             'categoria'   => 'arabes',
-            'marca'       => 'HAWAS',
+            'marca'       => 'RASASI',
             'imagen'      => 'assets/hawas_fire.png',
         ],
                [
@@ -101,11 +102,28 @@ function s7_catalogo(): array {
             'clase'       => 'frasco--onix',
             'stock'       => 25,
             'categoria'   => 'arabes',
-            'marca'       => 'HAWAS',
+            'marca'       => 'RASASI',
             'imagen'      => 'assets/hawas_lavagold.png',
         ],
-        
 
+        [
+            'id'          => 'Hawas-elixir',
+            'numero'      => 'No. XI',
+            'nombre'      => 'HAWAS ELIXIR',
+            'notas'       => 'Miel dorada · Ámbar resinoso · Vainilla ahumada · Maderas preciosas',
+            'descripcion' => 'Hawas Elixir representa la máxima opulencia y concentración de la saga. Inicia con notas cálidas de especias finas y toques frutales dorados que se entrelazan con un corazón de resinas preciosas. Su fondo amaderado, enriquecido con ámbar y vainilla, ofrece una estela profunda, ultra duradera y verdaderamente lujosa.',
+            'precio'      => 175.00,
+            'clase'       => 'frasco--onix',
+            'stock'       => 25,
+            'categoria'   => 'arabes',
+            'marca'       => 'RASASI',
+            'imagen'      => 'assets/hawas_elixir.png',
+        ],
+
+                /**
+ * PERFUMES DE LA MARCA AFNAN.
+ */
+        
     ];
 }
 
