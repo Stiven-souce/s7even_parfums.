@@ -92,19 +92,6 @@ function s7_catalogo(): array {
             'marca'       => 'RASASI',
             'imagen'      => 'assets/hawas_fire.png',
         ],
-               [
-            'id'          => 'Hawas-lavagold',
-            'numero'      => 'No. I',
-            'nombre'      => 'HAWAS LAVA GOLD',
-            'notas'       => 'Oud · Cuero · Pimienta negra',
-            'descripcion' => 'Hawas Lava Gold es la encarnación del lujo misterioso y la fuerza masculina. Inicia con un contraste vibrante de piña y manzana sobre un corazón dominante de cuero y especias oscuras. Su fondo de ámbar dulce y madura madera de oud deja una huella dorada, cálida e inolvidable a tu paso.',
-            'precio'      => 175.00,
-            'clase'       => 'frasco--onix',
-            'stock'       => 25,
-            'categoria'   => 'arabes',
-            'marca'       => 'RASASI',
-            'imagen'      => 'assets/hawas_lavagold.png',
-        ],
 
         [
             'id'          => 'Hawas-elixir',
@@ -118,6 +105,34 @@ function s7_catalogo(): array {
             'categoria'   => 'arabes',
             'marca'       => 'RASASI',
             'imagen'      => 'assets/hawas_elixir.png',
+        ],
+
+        [
+            'id'          => 'Hawas-malibu',
+            'numero'      => 'No. XII',
+            'nombre'      => 'HAWAS MALIBU',
+            'notas'       => 'Brisa marina · Lima ácida · Coco fresco · Madera flotante',
+            'descripcion' => 'Hawas Malibu es la viva esencia del verano costero y la brisa marina. Destaca por una apertura efervescente de cítricos jugosos y notas acuáticas que transmiten frescura inmediata. Su corazón floral y mentolado descansa sobre un fondo de madera de deriva, almizcle y ámbar claro, logrando un aroma limpio, vibrante y sumamente versátil.',
+            'precio'      => 175.00,
+            'clase'       => 'frasco--onix',
+            'stock'       => 25,
+            'categoria'   => 'arabes',
+            'marca'       => 'RASASI',
+            'imagen'      => 'assets/hawas_malibu.png',
+        ],
+
+         [
+            'id'          => 'Hawas-lavagold',
+            'numero'      => 'No. I',
+            'nombre'      => 'HAWAS LAVA GOLD',
+            'notas'       => 'Oud · Cuero · Pimienta negra',
+            'descripcion' => 'Hawas Lava Gold es la encarnación del lujo misterioso y la fuerza masculina. Inicia con un contraste vibrante de piña y manzana sobre un corazón dominante de cuero y especias oscuras. Su fondo de ámbar dulce y madura madera de oud deja una huella dorada, cálida e inolvidable a tu paso.',
+            'precio'      => 175.00,
+            'clase'       => 'frasco--onix',
+            'stock'       => 25,
+            'categoria'   => 'arabes',
+            'marca'       => 'RASASI',
+            'imagen'      => 'assets/hawas_lavagold.png',
         ],
 
                 /**
